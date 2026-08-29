@@ -1,0 +1,1 @@
+# Gestor-Inteligente-de-Documentos-Frontend
