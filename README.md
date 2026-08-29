@@ -32,3 +32,37 @@ Verificar que:
  Se ha completado la plantilla del Pull Request.
  Se han resuelto las conversaciones pendientes.
  No existen conflictos pendientes.
+
+## Reglas principales
+### No hacer Push directo
+No está permitido realizar push directamente a:
+
+main
+develop
+
+### Trabajar siempre en una rama
+Cada integrante debe trabajar en una rama correspondiente:
+
+feature/*
+fix/*
+docs/*
+
+### Todo cambio debe pasar por Pull Request
+Los cambios deben seguir siempre el flujo:
+
+Rama de trabajo
+      ↓
+   Commit
+      ↓
+Pull Request
+      ↓
+   Revisión
+      ↓
+   develop
+      ↓
+Pull Request
+      ↓
+    main
+
+### Importante
+El incumplimiento de estas reglas puede ocasionar el rechazo del Pull Request hasta que se corrija la situación.
