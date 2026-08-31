@@ -38,6 +38,14 @@ export default function App() {
 
     try {
       const resultado = await uploadDocument(fileData.file);
+      setActiveDocument({
+        nombre: resultado.fileName,
+        area: resultado.categoria,
+        categoriaConfianza: Math.round(resultado.confianza * 100),
+        correoDerivacion: resultado.derivacion,
+        datos: [],
+        resumen: `Documento clasificado automáticamente en ${resultado.categoria}.`
+      });
 
       clearTimeout(stepTimer);
 
