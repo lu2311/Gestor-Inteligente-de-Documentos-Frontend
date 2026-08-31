@@ -12,13 +12,29 @@ export default function Dropzone({ file, onFileSelected, onRemoveFile }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
+
     const dropped = e.dataTransfer.files?.[0];
-    if (dropped) onFileSelected({ nombre: dropped.name, size: formatSize(dropped.size) });
+
+    if (dropped) {
+      onFileSelected({
+        file: dropped,
+        nombre: dropped.name,
+        size: formatSize(dropped.size),
+      });
+    }
   };
+
 
   const handleChange = (e) => {
     const selected = e.target.files?.[0];
-    if (selected) onFileSelected({ nombre: selected.name, size: formatSize(selected.size) });
+
+    if (selected) {
+      onFileSelected({
+        file: selected,
+        nombre: selected.name,
+        size: formatSize(selected.size),
+      });
+    }
   };
 
   if (file) {

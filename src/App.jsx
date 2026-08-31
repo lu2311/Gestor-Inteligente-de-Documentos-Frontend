@@ -6,6 +6,7 @@ import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
 import { mockDocuments } from './data/mockDocuments';
+import { uploadDocument } from './services/api';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
@@ -14,23 +15,57 @@ export default function App() {
   const [activeDocument, setActiveDocument] = useState(null);
   const [activeFileName, setActiveFileName] = useState(null);
   const [failedFileName, setFailedFileName] = useState(null);
+  const [processingStep, setProcessingStep] = useState('Extrayendo texto...');
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const goToUpload = () => {
     setView('upload');
     setActiveDocument(null);
     setActiveFileName(null);
+    setFailedFileName(null);
   };
+  const handleStartProcessing = async (fileData) => {
+    if (!fileData?.file) return;
 
-  const handleStartProcessing = ({ file, resultId }) => {
-    const resultado = documentos.find((d) => d.id === resultId) || documentos[0];
-    setActiveDocument(resultado);
-    setActiveFileName(file.nombre);
+    setActiveFileName(fileData.nombre);
+    setProcessingStep('Extrayendo texto...');
     setView('processing');
+
+    const stepTimer = setTimeout(() => {
+      setProcessingStep('Clasificando con IA...');
+    }, 2500);
+
+    try {
+      const resultado = await uploadDocument(fileData.file);
+
+      clearTimeout(stepTimer);
+
+      setActiveDocument({
+        nombre: resultado.fileName,
+        area: resultado.categoria,
+        categoriaConfianza: Math.round(resultado.confianza * 100),
+        correoDerivacion: resultado.derivacion,
+        datos: [],
+        resumen: `Documento clasificado automáticamente en ${resultado.categoria}.`
+      });
+      setView('results');
+    } catch (error) {
+      clearTimeout(stepTimer);
+
+      if (error.status === 400) {
+        setErrorMessage('Tipo de archivo no soportado.');
+      } else if (error.status === 500) {
+        setErrorMessage('La IA no pudo procesar el documento.');
+      } else {
+        setErrorMessage('No se pudo conectar con el servidor.');
+      }
+
+      setFailedFileName(fileData.nombre);
+      setView('error');
+    }
   };
 
-  const handleProcessingComplete = () => {
-    setView('results');
-  };
 
   const handleSimulateError = () => {
     setFailedFileName('documento_prueba.pdf');
@@ -65,9 +100,9 @@ export default function App() {
         {view === 'processing' && (
           <UploadPage
             documentos={documentos}
-            onStartProcessing={() => {}}
-            onSimulateError={() => {}}
-            onViewHistorial={() => {}}
+            onStartProcessing={() => { }}
+            onSimulateError={() => { }}
+            onViewHistorial={() => { }}
           />
         )}
 
@@ -89,7 +124,7 @@ export default function App() {
         )}
       </div>
 
-      {view === 'processing' && <ProcessingModal onComplete={handleProcessingComplete} />}
+      {view === 'processing' && (<ProcessingModal step={processingStep} />)}
     </div>
   );
 }
