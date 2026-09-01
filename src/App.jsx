@@ -128,7 +128,7 @@ export default function App() {
         )}
 
         {view === 'error' && (
-          <ErrorState fileName={failedFileName} onRetry={goToUpload} onGoHome={goToUpload} />
+          <ErrorState fileName={failedFileName} message={errorMessage} onRetry={goToUpload} onGoHome={goToUpload} />
         )}
       </div>
 

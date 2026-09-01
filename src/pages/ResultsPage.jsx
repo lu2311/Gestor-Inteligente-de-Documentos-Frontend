@@ -16,9 +16,9 @@ export default function ResultsPage({ documento, fileName, onUploadAnother, onVi
         <div className="text-muted-soft small">{fileName || documento.nombre}</div>
       </div>
 
-      <CategoryConfidenceCard area={documento.area} confianza={documento.categoriaConfianza} />
-      <ExtractedDataGrid datos={documento.datos} />
-      <SummaryBox resumen={documento.resumen} />
+      <CategoryConfidenceCard area={documento.categoria} confianza={Math.round(documento.confianza * 100)}/>
+      {/*<ExtractedDataGrid datos={documento.datos} />*/}
+      <SummaryBox resumen={`Documento clasificado automáticamente en ${documento.categoria}.`} />
       <DerivationStatusCard correo={documento.correoDerivacion} />
 
       <div className="d-flex gap-2">
