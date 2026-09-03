@@ -4,3 +4,17 @@ dist
 *.log
 .DS_Store
 coverage
+
+# Vite
+.vite
+*.local
+
+# Environment files locales
+.env.local
+.env.*.local
+
+# IDE/OS
+.idea
+.vscode
+*.swp
+*.swo
