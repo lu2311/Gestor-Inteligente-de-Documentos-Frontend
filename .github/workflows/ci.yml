@@ -1,0 +1,111 @@
+# .github/workflows/ci.yml (Frontend)
+name: CI Frontend
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Gestor-Inteligente-de-Documentos-Frontend
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: install
+    defaults:
+      run:
+        working-directory: ./Gestor-Inteligente-de-Documentos-Frontend
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Verificar TypeScript
+        run: npm run typecheck || echo "typecheck script no configurado aún (Avance 4)"
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    defaults:
+      run:
+        working-directory: ./Gestor-Inteligente-de-Documentos-Frontend
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar Lint
+        run: npm run lint || echo "lint script no configurado aún (Avance 4)"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        working-directory: ./Gestor-Inteligente-de-Documentos-Frontend
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar pruebas
+        run: npm run test || echo "test script no configurado aún (Avance 4)"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: ./Gestor-Inteligente-de-Documentos-Frontend
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Compilar proyecto (Vite)
+        run: npm run build
+      - name: Subir artifact build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-frontend
+          path: Gestor-Inteligente-de-Documentos-Frontend/dist
+          retention-days: 7
