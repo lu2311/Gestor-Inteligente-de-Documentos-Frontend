@@ -6,6 +6,7 @@ import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
 import { mockDocuments } from './data/mockDocuments';
+import { uploadDocument } from './services/api';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
@@ -14,23 +15,57 @@ export default function App() {
   const [activeDocument, setActiveDocument] = useState(null);
   const [activeFileName, setActiveFileName] = useState(null);
   const [failedFileName, setFailedFileName] = useState(null);
+  const [processingStep, setProcessingStep] = useState('Extrayendo texto...');
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const goToUpload = () => {
     setView('upload');
     setActiveDocument(null);
     setActiveFileName(null);
+    setFailedFileName(null);
   };
+  const handleStartProcessing = async (fileData) => {
+    if (!fileData?.file) return;
 
-  const handleStartProcessing = ({ file, resultId }) => {
-    const resultado = documentos.find((d) => d.id === resultId) || documentos[0];
-    setActiveDocument(resultado);
-    setActiveFileName(file.nombre);
+    setActiveFileName(fileData.nombre);
+    setProcessingStep('Extrayendo texto...');
     setView('processing');
+
+    const stepTimer = setTimeout(() => {
+      setProcessingStep('Clasificando con IA...');
+    }, 2500);
+
+    try {
+      const resultado = await uploadDocument(fileData.file);
+      setActiveDocument({
+        nombre: resultado.fileName,
+        tipoDocumento: resultado.tipoDocumento,  // ← CAMBIO: era 'categoria'
+        area: resultado.area,                     // ← OK
+        confianza: resultado.confianza,
+        derivacion: resultado.derivacion,
+        datos: [],
+        resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento} en área ${resultado.area}.`
+    });
+
+clearTimeout(stepTimer);
+setView('results');
+    } catch (error) {
+      clearTimeout(stepTimer);
+
+      if (error.status === 400) {
+        setErrorMessage('Tipo de archivo no soportado.');
+      } else if (error.status === 500) {
+        setErrorMessage('La IA no pudo procesar el documento.');
+      } else {
+        setErrorMessage('No se pudo conectar con el servidor.');
+      }
+
+      setFailedFileName(fileData.nombre);
+      setView('error');
+    }
   };
 
-  const handleProcessingComplete = () => {
-    setView('results');
-  };
 
   const handleSimulateError = () => {
     setFailedFileName('documento_prueba.pdf');
@@ -38,16 +73,15 @@ export default function App() {
   };
 
   const handleVerDocumento = (doc) => {
-    setActiveDocument(doc);
+    setActiveDocument(doc);  // Los docs del mock deben tener tipoDocumento y area
     setActiveFileName(doc.nombre);
     if (doc.estado === 'Fallido') {
       setFailedFileName(doc.nombre);
       setView('error');
-    } else {
-      setView('results');
-    }
-  };
-
+  } else {
+    setView('results');
+  }
+};
   return (
     <div>
       <AppHeader />
@@ -65,9 +99,9 @@ export default function App() {
         {view === 'processing' && (
           <UploadPage
             documentos={documentos}
-            onStartProcessing={() => {}}
-            onSimulateError={() => {}}
-            onViewHistorial={() => {}}
+            onStartProcessing={() => { }}
+            onSimulateError={() => { }}
+            onViewHistorial={() => { }}
           />
         )}
 
@@ -85,11 +119,11 @@ export default function App() {
         )}
 
         {view === 'error' && (
-          <ErrorState fileName={failedFileName} onRetry={goToUpload} onGoHome={goToUpload} />
+          <ErrorState fileName={failedFileName} message={errorMessage} onRetry={goToUpload} onGoHome={goToUpload} />
         )}
       </div>
 
-      {view === 'processing' && <ProcessingModal onComplete={handleProcessingComplete} />}
+      {view === 'processing' && (<ProcessingModal step={processingStep} />)}
     </div>
   );
 }

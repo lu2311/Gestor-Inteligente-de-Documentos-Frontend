@@ -17,6 +17,20 @@
   --red: #c0392b;
   --red-soft: #fde8e8;
 
+  /* Áreas SUNAT - 4 categorías */
+  --area-declaracion-jurada-text: #1d4ed8;
+  --area-declaracion-jurada-bg: #eff6ff;
+
+  --area-fraccionamiento-text: #059669;
+  --area-fraccionamiento-bg: #ecfdf5;
+
+  --area-orden-pago-text: #b45309;
+  --area-orden-pago-bg: #fffbeb;
+
+  --area-formulario-2119-text: #7c3aed;
+  --area-formulario-2119-bg: #f5f3ff;
+
+  /* Legacy areas (mantener compatibilidad) */
   --area-finanzas-text: #2456c9;
   --area-finanzas-bg: #eaf1fd;
   --area-rrhh-text: #c23572;

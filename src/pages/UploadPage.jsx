@@ -7,23 +7,16 @@ import AreaDistributionCard from '../components/AreaDistributionCard';
 
 export default function UploadPage({ documentos, onStartProcessing, onSimulateError, onViewHistorial }) {
   const [file, setFile] = useState(null);
-  const [pendingResultId, setPendingResultId] = useState(null);
-
-  const handleDemoSelect = (demo) => {
-    setFile({ nombre: demo.nombre, size: '1.84 MB' });
-    setPendingResultId(demo.resultId);
-  };
 
   const handleFileSelected = (selected) => {
     setFile(selected);
-    setPendingResultId(null); // archivo real: usará un resultado genérico
   };
 
   const handleSubmit = () => {
     if (!file) return;
-    onStartProcessing({ file, resultId: pendingResultId });
-  };
 
+    onStartProcessing(file);
+  };
   return (
     <>
       <AreaSummaryRow documentos={documentos} />
@@ -34,11 +27,8 @@ export default function UploadPage({ documentos, onStartProcessing, onSimulateEr
             <h5 className="fw-bold mb-1">Subir Documento</h5>
             <p className="text-muted-soft small mb-3">La IA detectará automáticamente el área destino.</p>
 
-            <Dropzone file={file} onFileSelected={handleFileSelected} onRemoveFile={() => { setFile(null); setPendingResultId(null); }} />
+            <Dropzone file={file} onFileSelected={handleFileSelected} onRemoveFile={() => {setFile(null);}}/>
 
-            <div className="mt-4">
-              <DemoDocsList onSelectDemo={handleDemoSelect} />
-            </div>
 
             <div className="d-flex align-items-center gap-3">
               <button
