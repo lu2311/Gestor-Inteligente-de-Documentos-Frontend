@@ -40,25 +40,16 @@ export default function App() {
       const resultado = await uploadDocument(fileData.file);
       setActiveDocument({
         nombre: resultado.fileName,
-        categoria: resultado.categoria,           
-        confianza: resultado.confianza,           
-        derivacion: resultado.derivacion,         
+        tipoDocumento: resultado.tipoDocumento,  // ← CAMBIO: era 'categoria'
+        area: resultado.area,                     // ← OK
+        confianza: resultado.confianza,
+        derivacion: resultado.derivacion,
         datos: [],
-        resumen: `Documento clasificado automáticamente en ${resultado.categoria}.`
-      });
+        resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento} en área ${resultado.area}.`
+    });
 
-
-      clearTimeout(stepTimer);
-
-      setActiveDocument({
-        nombre: resultado.fileName,
-        area: resultado.categoria,
-        categoriaConfianza: Math.round(resultado.confianza * 100),
-        correoDerivacion: resultado.derivacion,
-        datos: [],
-        resumen: `Documento clasificado automáticamente en ${resultado.categoria}.`
-      });
-      setView('results');
+clearTimeout(stepTimer);
+setView('results');
     } catch (error) {
       clearTimeout(stepTimer);
 
@@ -82,16 +73,15 @@ export default function App() {
   };
 
   const handleVerDocumento = (doc) => {
-    setActiveDocument(doc);
+    setActiveDocument(doc);  // Los docs del mock deben tener tipoDocumento y area
     setActiveFileName(doc.nombre);
     if (doc.estado === 'Fallido') {
       setFailedFileName(doc.nombre);
       setView('error');
-    } else {
-      setView('results');
-    }
-  };
-
+  } else {
+    setView('results');
+  }
+};
   return (
     <div>
       <AppHeader />

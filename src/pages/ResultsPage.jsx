@@ -1,3 +1,4 @@
+// src/pages/ResultsPage.jsx
 import CategoryConfidenceCard from '../components/CategoryConfidenceCard';
 import SummaryBox from '../components/SummaryBox';
 import DerivationStatusCard from '../components/DerivationStatusCard';
@@ -29,12 +30,12 @@ export default function ResultsPage({
       </div>
 
       <CategoryConfidenceCard
-        area={documento.categoria}
+        tipoDocumento={documento.tipoDocumento}
         confianza={Number.isFinite(confianza) ? Math.round(confianza * 100) : 0}
       />
 
       <SummaryBox
-        resumen={`Documento clasificado automáticamente en ${documento.categoria}.`}
+        resumen={`Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`}
       />
 
       <DerivationStatusCard
