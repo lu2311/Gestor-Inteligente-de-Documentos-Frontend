@@ -1,22 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppHeader from './components/AppHeader';
 import ProcessingModal from './components/ProcessingModal';
 import UploadPage from './pages/UploadPage';
 import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
-import { mockDocuments } from './data/mockDocuments';
 import { uploadDocument } from './services/api';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
   const [view, setView] = useState('upload');
-  const [documentos] = useState(mockDocuments);
+  const [documentos, setDocumentos] = useState([]);
   const [activeDocument, setActiveDocument] = useState(null);
   const [activeFileName, setActiveFileName] = useState(null);
   const [failedFileName, setFailedFileName] = useState(null);
   const [processingStep, setProcessingStep] = useState('Extrayendo texto...');
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    window.localStorage.removeItem('gestor-documentos-historial');
+    window.localStorage.setItem('gestor-documentos-historial', JSON.stringify(documentos));
+  }, [documentos]);
 
 
   const goToUpload = () => {
@@ -36,20 +40,32 @@ export default function App() {
       setProcessingStep('Clasificando con IA...');
     }, 2500);
 
-    try {
+try {
       const resultado = await uploadDocument(fileData.file);
-      setActiveDocument({
+      const now = new Date();
+      const documentoProcesado = {
+        id: `ia-${now.getTime()}`,
         nombre: resultado.fileName,
-        tipoDocumento: resultado.tipoDocumento,  // ← CAMBIO: era 'categoria'
-        area: resultado.area,                     // ← OK
+        tipoDocumento: resultado.tipoDocumento,
+        area: resultado.area,
         confianza: resultado.confianza,
+        categoriaConfianza: Math.round(Number(resultado.confianza || 0) * 100),
         derivacion: resultado.derivacion,
+        campos: resultado.campos || {},
+        informeEjecutivo: resultado.informeEjecutivo || {},
+        resumenEjecutivo: resultado.resumenEjecutivo || '',
+        estado: 'Procesado',
+        fecha: now.toLocaleDateString('es-PE'),
+        hora: now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
         datos: [],
         resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento} en área ${resultado.area}.`
-    });
+      };
 
-clearTimeout(stepTimer);
-setView('results');
+      setActiveDocument(documentoProcesado);
+      setDocumentos((actuales) => [documentoProcesado, ...actuales]);
+
+      clearTimeout(stepTimer);
+      setView('results');
     } catch (error) {
       clearTimeout(stepTimer);
 
