@@ -5,7 +5,7 @@ import UploadPage from './pages/UploadPage';
 import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
-import { uploadDocument } from './services/api';
+import { uploadDocument, waitForDocument } from './services/api';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
@@ -41,7 +41,15 @@ export default function App() {
     }, 2500);
 
 try {
-      const resultado = await uploadDocument(fileData.file);
+      let resultado = await uploadDocument(fileData.file);
+      if (resultado.jobId) {
+        setProcessingStep('Documento en cola...');
+        resultado = await waitForDocument(resultado.jobId, (status) => {
+          if (status.status === 'processing' || status.status === 'retrying') {
+            setProcessingStep(status.status === 'retrying' ? 'Reintentando procesamiento...' : 'Clasificando con IA...');
+          }
+        });
+      }
       const now = new Date();
       const documentoProcesado = {
         id: `ia-${now.getTime()}`,

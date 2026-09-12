@@ -70,10 +70,10 @@ export default function Dropzone({ file, onFileSelected, onRemoveFile }) {
       role="button"
       tabIndex={0}
     >
-      <input ref={inputRef} type="file" className="d-none" accept=".pdf,.docx,image/*" onChange={handleChange} />
+      <input ref={inputRef} type="file" className="d-none" accept=".pdf,.docx,.xlsx,image/*" onChange={handleChange} />
       <i className="bi bi-cloud-arrow-up cloud-icon d-block mb-3" />
       <div className="fw-semibold">Arrastra tus archivos aquí o haz clic para explorar</div>
-      <div className="text-muted-soft small mt-1">Soporta PDF, JPG, PNG y DOCX (Máx. 10MB)</div>
+      <div className="text-muted-soft small mt-1">Soporta PDF, JPG, PNG, DOCX y XLSX (Máx. 10MB)</div>
     </div>
   );
 }
