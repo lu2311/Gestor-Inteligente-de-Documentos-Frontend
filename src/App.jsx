@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AppHeader from './components/AppHeader';
 import ProcessingModal from './components/ProcessingModal';
+import Chatbot from './components/Chatbot';
 import UploadPage from './pages/UploadPage';
 import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
@@ -140,6 +141,8 @@ try {
       </div>
 
       {view === 'processing' && (<ProcessingModal step={processingStep} />)}
+
+      <Chatbot documentos={documentos} />
     </div>
   );
 }

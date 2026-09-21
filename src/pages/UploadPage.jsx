@@ -4,9 +4,14 @@ import Dropzone from '../components/Dropzone';
 import DemoDocsList from '../components/DemoDocsList';
 import RecentDocumentsCard from '../components/RecentDocumentsCard';
 import AreaDistributionCard from '../components/AreaDistributionCard';
+import EmailToast from '../components/EmailToast';
 
 export default function UploadPage({ documentos, onStartProcessing, onSimulateError, onViewHistorial }) {
   const [file, setFile] = useState(null);
+  const [showToast, setShowToast] = useState(true);
+  if (!documento) return null;
+
+  const correo = AREA_CONFIG[documento.area]?.correo;
 
   const handleFileSelected = (selected) => {
     setFile(selected);
@@ -21,13 +26,25 @@ export default function UploadPage({ documentos, onStartProcessing, onSimulateEr
     <>
       <AreaSummaryRow documentos={documentos} />
 
+      {showToast && (
+        <EmailToast
+          key={documento.id}
+          archivo={fileName || documento.nombre}
+          area={documento.area}
+          correo={correo}
+          onSent={() => onEmailSent(documento, fileName || documento.nombre, correo)}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
+
       <div className="row g-3">
         <div className="col-lg-8">
           <div className="card-plain p-4">
             <h5 className="fw-bold mb-1">Subir Documento</h5>
             <p className="text-muted-soft small mb-3">La IA detectará automáticamente el área destino.</p>
 
-            <Dropzone file={file} onFileSelected={handleFileSelected} onRemoveFile={() => {setFile(null);}}/>
+            <Dropzone file={file} onFileSelected={handleFileSelected} onRemoveFile={() => { setFile(null); }} />
 
 
             <div className="d-flex align-items-center gap-3">
