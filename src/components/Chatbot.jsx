@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AREA_CONFIG } from '../data/mockDocuments';
+import { searchDocuments } from '../services/api';
 
 const SALUDO_INICIAL = {
   rol: 'bot',
@@ -9,29 +10,6 @@ const SALUDO_INICIAL = {
 
 const BUSQUEDAS_RAPIDAS = ['factura', 'contrato', 'guía', 'orden compra', 'ticket IT'];
 
-/**
- * Busca documentos por nombre o área. Por ahora consulta el arreglo local
- * `documentos` (la misma data que alimenta el Historial), a modo de simulación.
- *
- * Para conectar la base de datos real de Supabase, reemplaza esta función por
- * algo como:
- *
- *   const { data } = await supabase
- *     .from('documentos')
- *     .select('nombre, area, fecha, tamano, url_descarga')
- *     .ilike('nombre', `%${query}%`);
- *
- * y usa `url_descarga` (una URL pública de Supabase Storage) como href del
- * botón "Descargar".
- */
-function buscarDocumentos(query, documentos) {
-  if (!query.trim()) return [];
-  const q = query.toLowerCase();
-  return documentos.filter(
-    (doc) => doc.nombre.toLowerCase().includes(q) || doc.area.toLowerCase().includes(q)
-  );
-}
-
 function construirRespuesta(query, resultados) {
   if (resultados.length === 0) {
     return `No encontré ningún documento con "${query}". Intenta con otro nombre o categoría (Finanzas, RRHH, Logística, Compras, IT).`;
@@ -40,7 +18,21 @@ function construirRespuesta(query, resultados) {
   return `Encontré ${resultados.length} documentos que coinciden con "${query}":`;
 }
 
-export default function Chatbot({ documentos }) {
+function transformDocument(doc) {
+  const analysis = doc.document_analysis?.[0];
+  return {
+    id: doc.id,
+    nombre: doc.file_name,
+    area: analysis?.document_category || 'Sin clasificar',
+    fecha: doc.upload_date ? new Date(doc.upload_date).toLocaleDateString('es-ES') : '—',
+    tamano: '—',
+    descargaUrl: doc.storage_url || '#',
+    confidence: analysis?.confidence_percentage,
+    resumen: analysis?.ai_summary,
+  };
+}
+
+export default function Chatbot() {
   const [abierto, setAbierto] = useState(false);
   const [mensajes, setMensajes] = useState([SALUDO_INICIAL]);
   const [input, setInput] = useState('');
@@ -60,20 +52,34 @@ export default function Chatbot({ documentos }) {
     }
   }, [abierto]);
 
-  const enviar = (texto) => {
+  const buscarDocumentosAPI = async (query) => {
+    if (!query.trim()) return [];
+    try {
+      const data = await searchDocuments(query);
+      return data.map(transformDocument);
+    } catch (error) {
+      console.error('Error buscando documentos:', error);
+      return [];
+    }
+  };
+
+  const enviar = async (texto) => {
     const query = (texto ?? input).trim();
     if (!query || escribiendo) return;
     setInput('');
     setMensajes((prev) => [...prev, { rol: 'user', texto: query }]);
     setEscribiendo(true);
 
-    setTimeout(() => {
-      const resultados = buscarDocumentos(query, documentos);
+    try {
+      const resultados = await buscarDocumentosAPI(query);
       const respuesta = construirRespuesta(query, resultados);
       setEscribiendo(false);
       setMensajes((prev) => [...prev, { rol: 'bot', texto: respuesta, resultados: resultados.length ? resultados : undefined }]);
       if (!abierto) setNoLeidos((n) => n + 1);
-    }, 900 + Math.random() * 400);
+    } catch (error) {
+      setEscribiendo(false);
+      setMensajes((prev) => [...prev, { rol: 'bot', texto: 'Error al buscar documentos. Intenta de nuevo.' }]);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -82,9 +88,11 @@ export default function Chatbot({ documentos }) {
 
   const handleDescargar = (doc) => (e) => {
     e.preventDefault();
-    // Placeholder: reemplazar por window.open(doc.descargaUrl, '_blank') cuando
-    // descargaUrl apunte a un archivo real en Supabase Storage.
-    window.alert(`Descargando: ${doc.nombre}\n\n(Conecta Supabase para enlaces de descarga reales)`);
+    if (doc.descargaUrl && doc.descargaUrl !== '#') {
+      window.open(doc.descargaUrl, '_blank');
+    } else {
+      window.alert(`Descargando: ${doc.nombre}\n\n(El documento no tiene URL de descarga configurada)`);
+    }
   };
 
   return (
@@ -120,7 +128,7 @@ export default function Chatbot({ documentos }) {
               <div key={i} className={`d-flex flex-column gap-2 ${msg.rol === 'user' ? 'align-items-end' : 'align-items-start'}`}>
                 {msg.texto && <div className={`chat-bubble ${msg.rol}`}>{msg.texto}</div>}
                 {msg.resultados?.map((doc) => {
-                  const config = AREA_CONFIG[doc.area];
+                  const config = AREA_CONFIG[doc.area] || { bg: '#6c757d', text: '#fff', icon: 'bi-file-earmark-text' };
                   return (
                     <div className="chat-doc-card w-100" key={doc.id}>
                       <span className="chat-doc-icon" style={{ backgroundColor: config.bg, color: config.text }}>
@@ -130,13 +138,21 @@ export default function Chatbot({ documentos }) {
                         <div className="fw-semibold text-truncate">{doc.nombre}</div>
                         <div className="text-muted-soft" style={{ fontSize: '0.72rem' }}>
                           {doc.area} · {doc.fecha} · {doc.tamano}
+                          {doc.confidence && ` · Confianza: ${doc.confidence}%`}
                         </div>
+                        {doc.resumen && (
+                          <div className="text-muted-soft" style={{ fontSize: '0.68rem', marginTop: 2 }}>
+                            {doc.resumen.substring(0, 100)}...
+                          </div>
+                        )}
                       </div>
                       <a
                         href={doc.descargaUrl}
                         onClick={handleDescargar(doc)}
                         className="btn btn-success btn-sm d-flex align-items-center gap-1 flex-shrink-0"
                         style={{ fontSize: '0.72rem' }}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <i className="bi bi-download" />
                         Descargar
