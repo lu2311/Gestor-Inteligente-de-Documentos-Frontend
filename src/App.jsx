@@ -195,7 +195,7 @@ export default function App() {
 
       {view === 'processing' && (<ProcessingModal step={processingStep} />)}
 
-      <Chatbot documentos={documentos} />
+      <Chatbot />
     </div>
   );
 }
