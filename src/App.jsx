@@ -76,7 +76,8 @@ export default function App() {
               fecha: now.toLocaleDateString('es-PE'),
               hora: now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
               datos: [],
-              resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`
+              resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`,
+              descargaUrl: resultado.storageUrl || '#',
             };
 
             setActiveDocument(documentoProcesado);
@@ -115,7 +116,8 @@ export default function App() {
           fecha: now.toLocaleDateString('es-PE'),
           hora: now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
           datos: [],
-          resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`
+          resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`,
+          descargaUrl: resultado.storageUrl || '#',
         };
 
         setActiveDocument(documentoProcesado);
