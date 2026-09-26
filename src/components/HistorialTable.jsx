@@ -26,14 +26,31 @@ export default function HistorialTable({ documentos, onVerDocumento }) {
         <tbody>
           {documentos.map((doc) => (
             <tr key={doc.id}>
-              <td className="fw-semibold">{doc.nombre}</td>
-              <td><CategoryBadge area={doc.area} /></td>
+              <td className="fw-semibold">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-truncate" style={{ maxWidth: '280px' }} title={doc.nombre}>
+                    {doc.nombre}
+                  </span>
+                  {doc.storageUrl && doc.storageUrl !== '#' && (
+                    <a
+                      href={doc.storageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-muted-soft text-decoration-none"
+                      title="Ver/Descargar archivo desde bucket DocumentosIA"
+                    >
+                      <i className="bi bi-box-arrow-up-right small" />
+                    </a>
+                  )}
+                </div>
+              </td>
+              <td><CategoryBadge tipoDocumento={doc.tipoDocumento} area={doc.area} /></td>
               <td className="text-muted-soft">{doc.fecha} - {doc.hora}</td>
               <td><StatusBadge estado={doc.estado} /></td>
               <td>
                 <button
                   type="button"
-                  className="btn btn-link btn-sm p-0 text-decoration-none"
+                  className="btn btn-link btn-sm p-0 text-decoration-none fw-semibold"
                   onClick={() => onVerDocumento(doc)}
                 >
                   Ver →

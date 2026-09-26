@@ -1,14 +1,87 @@
 // src/data/mockDocuments.js
 
-export const AREAS = ['INTENDENCIA_RECAUDACION_CONTROL_MASIVO'];
+export const AREAS = [
+  'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+  'INTENDENCIA_FISCALIZACION',
+];
 
 export const AREA_CONFIG = {
   INTENDENCIA_RECAUDACION_CONTROL_MASIVO: { 
-    text: 'var(--area-intendencia-text)', 
-    bg: 'var(--area-intendencia-bg)', 
+    text: 'var(--area-intendencia-text, #1d4ed8)', 
+    bg: 'var(--area-intendencia-bg, #eff6ff)', 
     icon: 'bi-building' 
   },
+  INTENDENCIA_FISCALIZACION: { 
+    text: 'var(--red, #c0392b)', 
+    bg: 'var(--red-soft, #fde8e8)', 
+    icon: 'bi-shield-check' 
+  },
+  Contabilidad: {
+    text: 'var(--area-finanzas-text, #2456c9)',
+    bg: 'var(--area-finanzas-bg, #eaf1fd)',
+    icon: 'bi-calculator'
+  },
+  'Mesa de Partes': {
+    text: 'var(--blue, #2f5fdb)',
+    bg: 'var(--blue-soft, #eaf0fe)',
+    icon: 'bi-inbox'
+  },
 };
+
+export const COLOR_MAP = {
+  blue: { bg: 'var(--blue-soft, #eaf0fe)', text: 'var(--blue, #2f5fdb)' },
+  green: { bg: 'var(--green-soft, #e5f7ea)', text: 'var(--green, #16a34a)' },
+  orange: { bg: 'var(--yellow-soft, #fdf3d8)', text: 'var(--yellow, #a9720b)' },
+  purple: { bg: 'var(--area-formulario-2119-bg, #f5f3ff)', text: 'var(--area-formulario-2119-text, #7c3aed)' },
+  red: { bg: 'var(--red-soft, #fde8e8)', text: 'var(--red, #c0392b)' },
+};
+
+export function getAreaByDocType(tipo) {
+  const mapping = {
+    DECLARACION_JURADA_MENSUAL: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    DECLARACION_JURADA_ANUAL: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    RESOLUCION_FRACCIONAMIENTO: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    RESOLUCION_APLAZAMIENTO: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    RESOLUCION_APLAZAMIENTO_FRACCIONAMIENTO: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    ORDEN_PAGO_OP: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    SOLICITUD_INSCRIPCION_RUC: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    ACTUALIZACION_RUC: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    RESOLUCION_DETERMINACION_RD: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    RESOLUCION_MULTA_RM: 'INTENDENCIA_FISCALIZACION',
+    REQUERIMIENTO_FISCALIZACION: 'INTENDENCIA_FISCALIZACION',
+    AUDITORIA_LIBROS: 'INTENDENCIA_FISCALIZACION',
+    CARTA_PRESENTACION: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+    NOTIFICACION_ELECTRONICA: 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
+  };
+  return mapping[tipo] || 'INTENDENCIA_RECAUDACION_CONTROL_MASIVO';
+}
+
+export function getDestinationEmail(tipoDocumento, area) {
+  const map = {
+    DECLARACION_JURADA_MENSUAL: 'declaraciones.mensuales@sunat.gob.pe',
+    DECLARACION_JURADA_ANUAL: 'declaraciones.anuales@sunat.gob.pe',
+    RESOLUCION_FRACCIONAMIENTO: 'fraccionamiento.deudas@sunat.gob.pe',
+    RESOLUCION_APLAZAMIENTO: 'fraccionamiento.deudas@sunat.gob.pe',
+    RESOLUCION_APLAZAMIENTO_FRACCIONAMIENTO: 'fraccionamiento.deudas@sunat.gob.pe',
+    ORDEN_PAGO_OP: 'ordenes.pago@sunat.gob.pe',
+    SOLICITUD_INSCRIPCION_RUC: 'registro.ruc@sunat.gob.pe',
+    ACTUALIZACION_RUC: 'registro.ruc@sunat.gob.pe',
+    RESOLUCION_DETERMINACION_RD: 'determinacion.tributaria@sunat.gob.pe',
+    RESOLUCION_MULTA_RM: 'fiscalizacion.multas@sunat.gob.pe',
+    REQUERIMIENTO_FISCALIZACION: 'fiscalizacion.control@sunat.gob.pe',
+    AUDITORIA_LIBROS: 'fiscalizacion.libros@sunat.gob.pe',
+    CARTA_PRESENTACION: 'mesa.partes@sunat.gob.pe',
+    NOTIFICACION_ELECTRONICA: 'buzon.electronico@sunat.gob.pe',
+  };
+
+  if (tipoDocumento && map[tipoDocumento]) {
+    return map[tipoDocumento];
+  }
+  if (area && area.includes('FISCALIZACION')) {
+    return 'fiscalizacion.control@sunat.gob.pe';
+  }
+  return 'mesa.partes.digital@sunat.gob.pe';
+}
 
 export const TIPOS_CONFIG = {
   DECLARACION_JURADA_MENSUAL: { label: 'Declaración Jurada Mensual', icon: 'bi-file-earmark-text', color: 'blue' },

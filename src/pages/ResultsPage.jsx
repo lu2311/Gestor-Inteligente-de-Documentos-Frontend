@@ -1,8 +1,10 @@
 // src/pages/ResultsPage.jsx
+import { useState } from 'react';
 import CategoryConfidenceCard from '../components/CategoryConfidenceCard';
 import SummaryBox from '../components/SummaryBox';
 import DerivationStatusCard from '../components/DerivationStatusCard';
 import ExecutiveReport from '../components/ExecutiveReport';
+import EmailToast from '../components/EmailToast';
 
 export default function ResultsPage({
   documento,
@@ -10,12 +12,26 @@ export default function ResultsPage({
   onUploadAnother,
   onViewHistorial
 }) {
+  const [showToast, setShowToast] = useState(true);
+
   if (!documento) return null;
 
   const confianza = Number(documento.confianza);
+  const docFileName = fileName || documento.fileName || documento.nombre || 'Documento';
+  const targetEmail = documento.correoDerivacion || 'derivaciones@sunat.gob.pe';
 
   return (
     <div className="mx-auto" style={{ maxWidth: 800 }}>
+      {showToast && (
+        <EmailToast
+          archivo={docFileName}
+          area={documento.area}
+          correo={targetEmail}
+          onSent={() => {}}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
       <div className="text-center mb-4">
         <div className="result-check-circle">
           <i className="bi bi-check-lg" />
@@ -25,18 +41,30 @@ export default function ResultsPage({
           ¡Documento procesado exitosamente!
         </h5>
 
-        <div className="text-muted-soft small">
-          {fileName || documento.fileName}
+        <div className="text-muted-soft small d-flex align-items-center justify-content-center gap-2">
+          <span>{docFileName}</span>
+          {documento.storageUrl && documento.storageUrl !== '#' && (
+            <a
+              href={documento.storageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="badge bg-light text-primary border text-decoration-none"
+              title="Abrir archivo guardado en Supabase Storage (DocumentosIA)"
+            >
+              <i className="bi bi-file-earmark-arrow-down me-1" />
+              Ver en Storage
+            </a>
+          )}
         </div>
       </div>
 
       <CategoryConfidenceCard
         tipoDocumento={documento.tipoDocumento}
-        confianza={Number.isFinite(confianza) ? Math.round(confianza * 100) : 0}
+        confianza={Number.isFinite(confianza) ? Math.round(confianza * 100) : (documento.categoriaConfianza || 95)}
       />
 
       {/* NUEVO: Informe Ejecutivo Completo */}
-      {documento.informeEjecutivo && (
+      {documento.informeEjecutivo && Object.keys(documento.informeEjecutivo).length > 0 && (
         <ExecutiveReport
           informe={documento.informeEjecutivo}
           tipoDocumento={documento.tipoDocumento}
@@ -48,7 +76,7 @@ export default function ResultsPage({
       {(!documento.informeEjecutivo || Object.keys(documento.informeEjecutivo).length === 0) && (
         <>
           <SummaryBox
-            resumen={documento.resumenEjecutivo || `Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`}
+            resumen={documento.resumenEjecutivo || documento.resumen || `Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`}
           />
           {documento.campos && Object.keys(documento.campos).length > 0 && (
             <div className="card-plain p-3 mb-3">
@@ -69,7 +97,7 @@ export default function ResultsPage({
       )}
 
       <DerivationStatusCard
-        correo={documento.derivacion}
+        correo={targetEmail}
       />
 
       <div className="d-flex gap-2 mt-4">
