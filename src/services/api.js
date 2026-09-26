@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export async function uploadDocument(file) {
   const formData = new FormData();
@@ -17,4 +17,18 @@ export async function uploadDocument(file) {
   }
 
   return await response.json();
+}
+
+export async function checkJobStatus(jobId) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${API_URL}/upload/status/${jobId}`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    return await response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
 }

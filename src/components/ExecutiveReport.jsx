@@ -4,7 +4,7 @@ import { TIPOS_CONFIG } from '../data/mockDocuments';
 export default function ExecutiveReport({ informe, tipoDocumento, area }) {
   if (!informe) return null;
 
-  const config = TIPOS_CONFIG[tipoDocumento] || { label: tipoDocumento, icon: 'bi-file-text', color: 'blue' };
+  const config = tipoDocumento ? (TIPOS_CONFIG[tipoDocumento] || { label: tipoDocumento, icon: 'bi-file-text', color: 'blue' }) : { label: 'Desconocido', icon: 'bi-file-text', color: 'gray' };
   const areaConfig = { text: 'var(--area-intendencia-text)', bg: 'var(--area-intendencia-bg)', icon: 'bi-building' };
 
   const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -19,7 +19,7 @@ export default function ExecutiveReport({ informe, tipoDocumento, area }) {
               <i className={`bi ${'bi-building'}`} /> Intendencia de Recaudación y Control Masivo
             </span>
             <span className="badge-soft fs-6 px-3 py-2" style={{ backgroundColor: 'var(--blue-soft)', color: 'var(--blue)' }}>
-              <i className={`bi ${'bi-file-earmark-text'}`} /> {tipoDocumento.replace(/_/g, ' ')}
+            <i className={`bi ${'bi-file-earmark-text'}`} /> {(tipoDocumento || 'desconocido').replace(/_/g, ' ')}
             </span>
           </div>
           <div className="text-end">
