@@ -1,5 +1,5 @@
-import { getDestinationEmail, getAreaByDocType } from '../data/mockDocuments';
-export { getDestinationEmail, getAreaByDocType };
+import { getDestinationEmail, getAreaByDocType, cleanTextEncoding, formatAreaName } from '../data/mockDocuments';
+export { getDestinationEmail, getAreaByDocType, cleanTextEncoding, formatAreaName };
 
 const API_URL = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
   ? import.meta.env.VITE_API_URL
@@ -98,8 +98,12 @@ export function normalizeDocument(rawDoc) {
     });
   }
 
+  const rawFileName = rawDoc.file_name || rawDoc.nombre || 'documento.pdf';
+  const cleanFileName = cleanTextEncoding(rawFileName);
+  const areaFormateada = formatAreaName(area);
+
   // URL del documento en el bucket DocumentosIA de Supabase
-  const ext = (rawDoc.file_name || rawDoc.nombre || '').split('.').pop() || 'pdf';
+  const ext = cleanFileName.split('.').pop() || 'pdf';
   const fallbackStorageUrl = rawDoc.id
     ? `https://ltukivbdvxlrszjcqqfw.supabase.co/storage/v1/object/public/DocumentosIA/${rawDoc.id}.${ext}`
     : null;
@@ -107,28 +111,33 @@ export function normalizeDocument(rawDoc) {
 
   const correoDerivacion = rawDoc.correoDerivacion || getDestinationEmail(tipoDocumento, area);
 
+  const cleanResumenEjecutivo = cleanTextEncoding(rawDoc.resumenEjecutivo || analysis?.ai_summary || '');
+  const cleanResumen = cleanTextEncoding(
+    rawDoc.resumen ||
+      analysis?.ai_summary ||
+      (estado === 'Fallido'
+        ? 'El archivo no pudo ser procesado o no contiene texto legible.'
+        : `Documento clasificado automáticamente como ${tipoDocumento} en área ${areaFormateada}.`)
+  );
+
   return {
     ...rawDoc,
     id: rawDoc.id,
-    nombre: rawDoc.file_name || rawDoc.nombre || 'documento.pdf',
-    fileName: rawDoc.file_name || rawDoc.nombre || 'documento.pdf',
+    nombre: cleanFileName,
+    fileName: cleanFileName,
     tipoDocumento,
     area,
+    areaFormateada,
     estado,
     confianza,
     categoriaConfianza,
     fecha,
     hora,
     campos,
-    resumenEjecutivo: rawDoc.resumenEjecutivo || analysis?.ai_summary || '',
-    resumen:
-      rawDoc.resumen ||
-      analysis?.ai_summary ||
-      (estado === 'Fallido'
-        ? 'El archivo no pudo ser procesado o no contiene texto legible.'
-        : `Documento clasificado automáticamente como ${tipoDocumento} en área ${area}.`),
+    resumenEjecutivo: cleanResumenEjecutivo,
+    resumen: cleanResumen,
     informeEjecutivo: rawDoc.informeEjecutivo || null,
-    derivacion: rawDoc.derivacion || `Derivado a ${area}`,
+    derivacion: rawDoc.derivacion || `Derivado a ${areaFormateada}`,
     correoDerivacion,
     storageUrl,
     descargaUrl: storageUrl || '#',

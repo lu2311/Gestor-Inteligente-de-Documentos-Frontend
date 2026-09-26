@@ -1,4 +1,4 @@
-import { AREAS, AREA_CONFIG } from '../data/mockDocuments';
+import { AREAS, AREA_CONFIG, formatAreaName } from '../data/mockDocuments';
 
 export default function AreaSummaryRow({ documentos }) {
   return (
@@ -14,7 +14,7 @@ export default function AreaSummaryRow({ documentos }) {
               </span>
               <div>
                 <div className="value">{count}</div>
-                <div className="label">{area}</div>
+                <div className="label">{formatAreaName(area)}</div>
               </div>
             </div>
           </div>

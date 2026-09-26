@@ -5,6 +5,47 @@ export const AREAS = [
   'INTENDENCIA_FISCALIZACION',
 ];
 
+export const AREA_LABELS = {
+  INTENDENCIA_RECAUDACION_CONTROL_MASIVO: 'Recaudación y Control Masivo',
+  INTENDENCIA_FISCALIZACION: 'Fiscalización',
+  Contabilidad: 'Contabilidad',
+  'Mesa de Partes': 'Mesa de Partes',
+};
+
+export function formatAreaName(area) {
+  if (!area) return 'General';
+  if (AREA_LABELS[area]) return AREA_LABELS[area];
+  return area
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+export function cleanTextEncoding(str) {
+  if (!str) return '';
+  try {
+    const decoded = decodeURIComponent(escape(str));
+    if (decoded && !decoded.includes('Ã')) return decoded;
+  } catch {}
+
+  return str
+    .replace(/Ã[\u0080-\u009f]?N/g, 'ÓN')
+    .replace(/Ã“/g, 'Ó')
+    .replace(/Ã\u0093/g, 'Ó')
+    .replace(/Ã¡/g, 'á')
+    .replace(/Ã©/g, 'é')
+    .replace(/Ã­/g, 'í')
+    .replace(/Ã³/g, 'ó')
+    .replace(/Ãº/g, 'ú')
+    .replace(/Ã±/g, 'ñ')
+    .replace(/Ã\u0081/g, 'Á')
+    .replace(/Ã\u0089/g, 'É')
+    .replace(/Ã\u008d/g, 'Í')
+    .replace(/Ã\u00da/g, 'Ú')
+    .replace(/Ã\u0091/g, 'Ñ')
+    .replace(/ÃN/g, 'ÓN');
+}
+
 export const AREA_CONFIG = {
   INTENDENCIA_RECAUDACION_CONTROL_MASIVO: { 
     text: 'var(--area-intendencia-text, #1d4ed8)', 
