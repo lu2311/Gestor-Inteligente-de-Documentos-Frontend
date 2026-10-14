@@ -179,6 +179,7 @@ body {
 /* ---------- Dropzone ---------- */
 .dropzone {
   border: 2px dashed var(--border);
+  margin: 1.5rem 0;
   border-radius: 16px;
   padding: 3rem 1.5rem;
   text-align: center;
@@ -289,15 +290,59 @@ body {
 }
 
 .area-progress-track {
+  width: 100%;
   height: 6px;
-  border-radius: 999px;
-  background-color: #eef0f4;
   overflow: hidden;
+  border-radius: 999px;
+  background-color: var(--border);
 }
 
 .area-progress-fill {
   height: 100%;
   border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.area-distribution-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 8px;
+}
+
+.area-distribution-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.area-distribution-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
+.area-distribution-label {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.area-distribution-count {
+  display: block;
+  align-self: flex-start;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* ---------- Processing modal ---------- */
@@ -331,7 +376,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .processing-progress {
@@ -517,8 +564,15 @@ body {
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .email-toast-progress {
@@ -534,8 +588,13 @@ body {
 }
 
 @keyframes drainRight {
-  from { width: 100%; }
-  to { width: 0%; }
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
 }
 
 .email-toast-icon {
@@ -756,10 +815,485 @@ body {
   animation: typingBounce 1.2s ease-in-out infinite;
 }
 
-.chatbot-typing span:nth-child(2) { animation-delay: 0.15s; }
-.chatbot-typing span:nth-child(3) { animation-delay: 0.3s; }
+.chatbot-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chatbot-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes typingBounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-  40% { transform: translateY(-4px); opacity: 1; }
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+
+/* =====================================================================
+   RESPONSIVE + CÁMARA  (bloque añadido)
+
+   Estrategia mobile-first con los breakpoints de Bootstrap:
+     < 576px  móvil   |  576–767px  móvil grande  |  768–991px  tablet  |  ≥ 992px  escritorio
+
+   Las reglas "base" valen para todos los tamaños; las @media solo ajustan.
+   El breakpoint móvil (575.98px) debe coincidir con MOBILE_QUERY en Chatbot.jsx.
+   ===================================================================== */
+
+:root {
+  /* Altura mínima del header: la usan los paneles flotantes en móvil para ubicarse bajo él. */
+  --header-h: 3.5rem;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+/* ---------- Base (todos los tamaños) ---------- */
+.app-header {
+  min-height: var(--header-h);
+  gap: 0.75rem;
+}
+
+.app-header .brand {
+  min-width: 0;
+  text-align: left;
+}
+
+.app-header .brand-text {
+  line-height: 1.15;
+}
+
+/* Deja espacio para que el botón flotante del chatbot no tape contenido. */
+.app-body {
+  padding-bottom: 5.5rem;
+}
+
+.processing-overlay {
+  padding: 1rem;
+}
+
+/* Evita desbordes con nombres de archivo largos. */
+.file-preview {
+  max-width: 100%;
+}
+
+.file-preview>div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recent-doc-row>div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin-right: 0.5rem;
+}
+
+.notif-row>.flex-fill {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.historial-table tbody td:first-child {
+  overflow-wrap: anywhere;
+}
+
+/* Tarjetas laterales de la pantalla de subida:
+   1 columna en móvil, 2 en tablet y apiladas en escritorio (dentro de col-lg-4). */
+.sidebar-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .sidebar-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Cámara (CameraCapture) ---------- */
+/* Por encima del botón flotante del chatbot (1070) para que no tape "Tomar foto". */
+.camera-backdrop {
+  z-index: 1085;
+}
+
+.camera-modal {
+  z-index: 1090;
+}
+
+@supports (height: 100dvh) {
+  .camera-modal {
+    height: 100dvh;
+  }
+}
+
+.camera-modal .modal-dialog {
+  --bs-modal-width: 640px;
+}
+
+.camera-content {
+  border: 0;
+  border-radius: 18px;
+}
+
+.camera-header {
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  border-bottom-color: var(--border);
+}
+
+.camera-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1.25rem;
+}
+
+.camera-footer {
+  border-top: 0;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.camera-footer .btn {
+  min-height: 44px;
+}
+
+.camera-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 14rem;
+  max-height: calc(100vh - 17rem);
+  max-height: calc(100dvh - 17rem);
+  background-color: #111827;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* contain: lo que se ve en el encuadre es exactamente lo que se captura (sin recortes). */
+.camera-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #111827;
+}
+
+.camera-media.is-hidden {
+  visibility: hidden;
+}
+
+.camera-overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 26rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+}
+
+.camera-overlay-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.camera-overlay-text {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ---------- Chatbot: botón de cerrar (X) y controles ---------- */
+.chatbot-close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.chatbot-close:hover,
+.chatbot-close:focus-visible {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-send {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.chatbot-body {
+  overscroll-behavior: contain;
+}
+
+/* ---------- Móvil (< 576px) ---------- */
+@media (max-width: 575.98px) {
+
+  /* Header y contenedor */
+  .app-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .app-header .brand {
+    font-size: 0.9rem;
+    gap: 0.45rem;
+  }
+
+  /* Zonas táctiles de 44px (iconos sin texto en móvil). */
+  .header-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    padding: 0.4rem;
+  }
+
+  .app-body {
+    padding: 1rem 0.75rem 5.5rem;
+  }
+
+  /* Resumen por área: la 5.ª tarjeta (huérfana) ocupa todo el ancho. */
+  .summary-wrap .row>.col-6:last-child:nth-child(odd) {
+    width: 100%;
+  }
+
+  .kpi-mini {
+    padding: 0.7rem 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .kpi-mini .icon-box {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Subida */
+  .dropzone {
+    padding: 2rem 1rem;
+    margin: 1rem 0;
+  }
+
+  .file-preview {
+    width: 100%;
+  }
+
+  /* Procesando, resultados y avisos */
+  .processing-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .result-check-circle {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+
+  .email-toast {
+    top: calc(var(--header-h) + 0.5rem);
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: none;
+  }
+
+  /* Notificaciones: panel fijo a lo ancho de la pantalla, bajo el header. */
+  .notif-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 0.25rem);
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: none;
+    margin-top: 0;
+    max-height: calc(100vh - var(--header-h) - 1.5rem);
+    max-height: calc(100dvh - var(--header-h) - 1.5rem);
+  }
+
+  /* Historial: 5 columnas no caben en un teléfono, así que cada fila pasa a ser una
+     tarjeta: nombre arriba; categoría, estado y "Ver →" debajo; fecha al pie.
+     (Depende del orden de columnas: Nombre, Categoría, Fecha, Estado, Acción.) */
+  .historial-table,
+  .historial-table tbody {
+    display: block;
+  }
+
+  .historial-table thead {
+    display: none;
+  }
+
+  .historial-table tbody tr {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.45rem 0.6rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .historial-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .historial-table tbody td {
+    display: block;
+    padding: 0;
+    border: 0;
+    font-size: 0.85rem;
+  }
+
+  .historial-table tbody td:nth-child(1) {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+  }
+
+  .historial-table tbody td:nth-child(2) {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .historial-table tbody td:nth-child(4) {
+    grid-row: 2;
+    grid-column: 2;
+  }
+
+  .historial-table tbody td:nth-child(5) {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .historial-table tbody td:nth-child(3) {
+    grid-row: 3;
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+  }
+
+  .filter-chip {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .page-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Cámara: pantalla completa (el modal ya usa modal-fullscreen-sm-down). */
+  .camera-content {
+    border-radius: 0;
+  }
+
+  .camera-header {
+    padding: 0.75rem 1rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .camera-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .camera-stage {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 0;
+    max-height: none;
+    border-radius: 12px;
+  }
+
+  .camera-footer {
+    flex-wrap: nowrap;
+    padding: 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Chatbot: pantalla completa con la X para minimizar. */
+  .chatbot-fab {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+
+  .chatbot-fab.is-open {
+    display: none;
+    /* el panel cubre la pantalla; se cierra con la X del header */
+  }
+
+  .chatbot-panel {
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .chatbot-header {
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .chatbot-close {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .chatbot-body {
+    padding: 0.75rem;
+  }
+
+  .chat-bubble {
+    max-width: 92%;
+    font-size: 0.9rem;
+  }
+
+  .chatbot-input-row {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 16px evita que iOS haga zoom automático al enfocar el campo. */
+  .chatbot-input {
+    font-size: 16px;
+  }
+
+  .chatbot-send {
+    width: 44px;
+    height: 44px;
+  }
+
+  body.chatbot-open {
+    overflow: hidden;
+  }
 }

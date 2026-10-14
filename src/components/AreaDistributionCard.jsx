@@ -1,7 +1,7 @@
 import { AREAS, AREA_CONFIG, formatAreaName } from '../data/mockDocuments';
 
-export default function AreaDistributionCard({ documentos }) {
-  const total = documentos.length || 1;
+export default function AreaDistributionCard({ documentos = [] }) {
+  const total = documentos.length;
 
   return (
     <div className="card-plain p-3">
@@ -22,9 +22,9 @@ export default function AreaDistributionCard({ documentos }) {
             <div className="area-progress-track">
               <div className="area-progress-fill" style={{ width: `${pct}%`, backgroundColor: config.text }} />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
