@@ -37,17 +37,23 @@ export default function AppHeader({
     <header className="app-header">
       <button type="button" className="brand" onClick={onLogoClick}>
         <i className="bi bi-file-earmark-text" />
-        Gestor Inteligente de Documentos
+        <span className="brand-text">Gestor Inteligente de Documentos</span>
       </button>
 
       <div className="d-flex align-items-center gap-1">
-        <span className="ia-status-pill me-2">
+        {/*<span className="ia-status-pill me-2">
           <span className="dot" />
           IA Activa
-        </span>
+        </span>*/}
 
         <div className="position-relative" ref={panelRef}>
-          <button type="button" className="header-icon-btn" onClick={togglePanel}>
+          <button
+            type="button"
+            className="header-icon-btn"
+            onClick={togglePanel}
+            aria-label="Notificaciones"
+            aria-expanded={panelOpen}
+          >
             <i className="bi bi-bell" />
             <span className="d-none d-sm-inline">Notificaciones</span>
             {noLeidas > 0 && <span className="notif-dot" />}
