@@ -1,207 +1,194 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AREA_CONFIG } from '../data/mockDocuments';
-import { searchDocuments } from '../services/api';
+import { useEffect, useRef, useState } from 'react';
+import { chatStream } from '../services/api';
 
-const SALUDO_INICIAL = {
-  rol: 'bot',
-  texto:
-    '¡Hola! 👋 Soy el asistente de documentos. Puedo ayudarte a buscar archivos por nombre. Escribe el nombre o parte del nombre del documento que necesitas.',
-};
-
-const BUSQUEDAS_RAPIDAS = ['factura', 'contrato', 'guía', 'orden compra', 'ticket IT'];
-
-function construirRespuesta(query, resultados) {
-  if (resultados.length === 0) {
-    return `No encontré ningún documento con "${query}". Intenta con otro nombre o categoría (Finanzas, RRHH, Logística, Compras, IT).`;
-  }
-  if (resultados.length === 1) return `Encontré 1 documento que coincide con "${query}":`;
-  return `Encontré ${resultados.length} documentos que coinciden con "${query}":`;
-}
-
-function transformDocument(doc) {
-  const analysis = doc.document_analysis?.[0];
-  return {
-    id: doc.id,
-    nombre: doc.file_name,
-    area: analysis?.document_category || 'Sin clasificar',
-    fecha: doc.upload_date ? new Date(doc.upload_date).toLocaleDateString('es-ES') : '—',
-    tamano: '—',
-    descargaUrl: doc.storage_url || '#',
-    confidence: analysis?.confidence_percentage,
-    resumen: analysis?.ai_summary,
-  };
+// Corrige la codificación UTF-8 corrupta en nombres de archivos
+function fixEncoding(str) {
+  if (!str) return str;
+  return str
+    .replace(/Ã/g, 'Ó').replace(/Ã³/g, 'ó').replace(/Ã¡/g, 'á')
+    .replace(/Ã©/g, 'é').replace(/Ã/g, 'í').replace(/Ãº/g, 'ú')
+    .replace(/Ã±/g, 'ñ').replace(/Ã/g, 'Á').replace(/Ã‰/g, 'É')
+    .replace(/Ã/g, 'Í').replace(/Ã“/g, 'Ó').replace(/Ãš/g, 'Ú').replace(/Ã‘/g, 'Ñ');
 }
 
 export default function Chatbot() {
-  const [abierto, setAbierto] = useState(false);
-  const [mensajes, setMensajes] = useState([SALUDO_INICIAL]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: '¡Hola! Soy tu asistente inteligente con Ollama (Llama 3.1). Puedo responder preguntas sobre los documentos almacenados en Supabase o trámites SUNAT.' }
+  ]);
   const [input, setInput] = useState('');
-  const [escribiendo, setEscribiendo] = useState(false);
-  const [noLeidos, setNoLeidos] = useState(0);
-  const bottomRef = useRef(null);
-  const inputRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  useLayoutEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [mensajes, escribiendo]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (abierto) {
-      setNoLeidos(0);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [abierto]);
+    scrollToBottom();
+  }, [messages, isTyping]);
 
-  const buscarDocumentosAPI = async (query) => {
-    if (!query.trim()) return [];
-    try {
-      const data = await searchDocuments(query);
-      return data.map(transformDocument);
-    } catch (error) {
-      console.error('Error buscando documentos:', error);
-      return [];
-    }
-  };
+  const sendQuery = async (queryText) => {
+    if (!queryText.trim() || isTyping) return;
 
-  const enviar = async (texto) => {
-    const query = (texto ?? input).trim();
-    if (!query || escribiendo) return;
+    const userMessage = { role: 'user', content: queryText };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setMensajes((prev) => [...prev, { rol: 'user', texto: query }]);
-    setEscribiendo(true);
+    setIsTyping(true);
+
+    const assistantMessageId = Date.now();
+    setMessages(prev => [...prev, { role: 'assistant', content: '', id: assistantMessageId, results: [] }]);
 
     try {
-      const resultados = await buscarDocumentosAPI(query);
-      const respuesta = construirRespuesta(query, resultados);
-      setEscribiendo(false);
-      setMensajes((prev) => [...prev, { rol: 'bot', texto: respuesta, resultados: resultados.length ? resultados : undefined }]);
-      if (!abierto) setNoLeidos((n) => n + 1);
+      const historyForApi = messages.map(m => ({ role: m.role, content: m.content }));
+      historyForApi.push({ role: 'user', content: userMessage.content });
+
+      let currentText = '';
+      let currentResults = [];
+
+      for await (const chunk of chatStream(userMessage.content, historyForApi)) {
+        if (chunk.type === 'content' && chunk.content) {
+          currentText += chunk.content;
+          setMessages(prev => prev.map(m => 
+            m.id === assistantMessageId ? { ...m, content: currentText } : m
+          ));
+        } else if (chunk.type === 'tool_results' && chunk.results) {
+          currentResults = chunk.results.flatMap(r => r.results ? r.results : (r.nombre ? [r] : []));
+          setMessages(prev => prev.map(m => 
+            m.id === assistantMessageId ? { ...m, results: currentResults } : m
+          ));
+        } else if (chunk.type === 'error') {
+          throw new Error(chunk.error || 'Error en el stream');
+        }
+      }
     } catch (error) {
-      setEscribiendo(false);
-      setMensajes((prev) => [...prev, { rol: 'bot', texto: 'Error al buscar documentos. Intenta de nuevo.' }]);
+      console.error('Error en el chat:', error);
+      setMessages(prev => prev.map(m => 
+        m.id === assistantMessageId ? { ...m, content: 'Lo siento, hubo un error al conectar con Ollama o el backend. Por favor verifica que los servicios estén activos.' } : m
+      ));
+    } finally {
+      setIsTyping(false);
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') enviar();
-  };
-
-  const handleDescargar = (doc) => (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
-    if (doc.descargaUrl && doc.descargaUrl !== '#') {
-      window.open(doc.descargaUrl, '_blank');
-    } else {
-      window.alert(`Descargando: ${doc.nombre}\n\n(El documento no tiene URL de descarga configurada)`);
-    }
+    sendQuery(input);
   };
 
   return (
     <>
-      <button
-        type="button"
-        className="chatbot-fab"
-        onClick={() => setAbierto((o) => !o)}
-        aria-label="Abrir asistente de documentos"
+      {/* Botón flotante */}
+      <button 
+        className="chatbot-fab" 
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Abrir chat"
       >
-        <i className={`bi ${abierto ? 'bi-x-lg' : 'bi-robot'}`} />
-        {!abierto && noLeidos > 0 && <span className="badge-unread">{noLeidos}</span>}
+        <i className={`bi bi-${isOpen ? 'x-lg' : 'chat-dots-fill'}`} />
       </button>
 
-      {abierto && (
+      {/* Panel del Chat */}
+      {isOpen && (
         <div className="chatbot-panel">
           <div className="chatbot-header">
-            <span className="avatar">
-              <i className="bi bi-robot" />
-            </span>
-            <div className="flex-fill">
-              <div className="fw-semibold small">Asistente de Documentos</div>
-              <div className="d-flex align-items-center gap-1" style={{ fontSize: '0.7rem', opacity: 0.85 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
-                En línea · Base de datos activa
-              </div>
+            <div className="avatar"><i className="bi bi-robot" /></div>
+            <div>
+              <div className="fw-bold">Asistente IA RAG</div>
+              <div className="small opacity-75">Ollama (Llama 3.1) • Supabase Bucket</div>
             </div>
-            <button type="button" className="btn-close btn-close-white" onClick={() => setAbierto(false)} />
           </div>
 
           <div className="chatbot-body">
-            {mensajes.map((msg, i) => (
-              <div key={i} className={`d-flex flex-column gap-2 ${msg.rol === 'user' ? 'align-items-end' : 'align-items-start'}`}>
-                {msg.texto && <div className={`chat-bubble ${msg.rol}`}>{msg.texto}</div>}
-                {msg.resultados?.map((doc) => {
-                  const config = AREA_CONFIG[doc.area] || { bg: '#6c757d', text: '#fff', icon: 'bi-file-earmark-text' };
-                  return (
-                    <div className="chat-doc-card w-100" key={doc.id}>
-                      <span className="chat-doc-icon" style={{ backgroundColor: config.bg, color: config.text }}>
-                        <i className={`bi ${config.icon}`} />
-                      </span>
-                      <div className="flex-fill" style={{ minWidth: 0 }}>
-                        <div className="fw-semibold text-truncate">{doc.nombre}</div>
-                        <div className="text-muted-soft" style={{ fontSize: '0.72rem' }}>
-                          {doc.area} · {doc.fecha} · {doc.tamano}
-                          {doc.confidence && ` · Confianza: ${doc.confidence}%`}
-                        </div>
-                        {doc.resumen && (
-                          <div className="text-muted-soft" style={{ fontSize: '0.68rem', marginTop: 2 }}>
-                            {doc.resumen.substring(0, 100)}...
-                          </div>
-                        )}
-                      </div>
-                      <a
-                        href={doc.descargaUrl}
-                        onClick={handleDescargar(doc)}
-                        className="btn btn-success btn-sm d-flex align-items-center gap-1 flex-shrink-0"
-                        style={{ fontSize: '0.72rem' }}
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`chat-bubble ${msg.role === 'user' ? 'user' : 'assistant'}`}>
+                <div className="text-content" style={{ whiteSpace: 'pre-wrap' }}>
+                  {msg.content || (msg.role === 'assistant' && isTyping && idx === messages.length - 1 ? 'Pensando y consultando Supabase...' : '')}
+                </div>
+                
+                {/* Tarjetas de documentos recomendados / encontrados en Supabase */}
+                {msg.results && msg.results.length > 0 && (
+                  <div className="mt-2 d-flex flex-column gap-2">
+                    <div className="text-muted fw-semibold" style={{ fontSize: '0.72rem' }}>
+                      📄 Documentos relevantes en Supabase:
+                    </div>
+                    {msg.results.map((doc, i) => (
+                      <a 
+                        key={i} 
+                        href={doc.descargaUrl || '#'} 
+                        className="document-card p-2 rounded border bg-light text-decoration-none d-flex align-items-center gap-2"
                         target="_blank"
                         rel="noopener noreferrer"
+                        title="Ver / Descargar archivo del bucket"
                       >
-                        <i className="bi bi-download" />
-                        Descargar
+                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-4" />
+                        <div className="flex-grow-1 overflow-hidden">
+                          <div className="fw-semibold small text-truncate">
+                            {fixEncoding(doc.nombre)}
+                          </div>
+                          <div className="text-muted text-truncate" style={{ fontSize: '0.7rem' }}>
+                            {doc.tipoDocumento} • {doc.area}
+                          </div>
+                        </div>
+                        <i className="bi bi-download text-primary ms-auto" />
                       </a>
-                    </div>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
-            {escribiendo && (
-              <div className="chatbot-typing">
-                <span /><span /><span />
+            {/* Sugerencias iniciales rápidas */}
+            {messages.length === 1 && !isTyping && (
+              <div className="d-flex flex-wrap gap-1 mt-2">
+                <button 
+                  type="button" 
+                  className="btn btn-outline-primary btn-sm rounded-pill py-1 px-2" 
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => sendQuery('¿Qué documentos hay subidos en Supabase?')}
+                >
+                  📄 Ver documentos
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-outline-primary btn-sm rounded-pill py-1 px-2" 
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => sendQuery('¿Qué documentos de RUC están registrados y cuáles son sus datos?')}
+                >
+                  🔍 Buscar por RUC
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-outline-primary btn-sm rounded-pill py-1 px-2" 
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => sendQuery('¿A qué áreas se han derivado los documentos?')}
+                >
+                  🏛️ Ver derivaciones
+                </button>
               </div>
             )}
-            <div ref={bottomRef} />
+
+            <div ref={messagesEndRef} />
           </div>
 
-          {mensajes.length <= 1 && (
-            <div className="px-3 py-2 d-flex flex-wrap gap-2 border-top bg-white">
-              <div className="w-100 text-muted-soft" style={{ fontSize: '0.7rem' }}>Búsquedas frecuentes:</div>
-              {BUSQUEDAS_RAPIDAS.map((q) => (
-                <button key={q} type="button" className="chat-quick-btn" onClick={() => { setInput(q); inputRef.current?.focus(); }}>
-                  {q}
-                </button>
-              ))}
+          <form className="chatbot-footer p-2 border-top" onSubmit={handleSend}>
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Pregunta sobre tus documentos..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isTyping}
+              />
+              <button 
+                className="btn btn-primary btn-sm" 
+                type="submit" 
+                disabled={isTyping || !input.trim()}
+              >
+                <i className="bi bi-send-fill" />
+              </button>
             </div>
-          )}
-
-          <div className="p-2 border-top d-flex align-items-center gap-2 bg-white">
-            <input
-              ref={inputRef}
-              type="text"
-              className="form-control form-control-sm"
-              placeholder="Buscar documento por nombre..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              type="button"
-              className="btn btn-primary btn-sm d-flex align-items-center justify-content-center"
-              style={{ width: 34, height: 34 }}
-              disabled={!input.trim() || escribiendo}
-              onClick={() => enviar()}
-            >
-              <i className="bi bi-send" />
-            </button>
-          </div>
+          </form>
         </div>
       )}
     </>

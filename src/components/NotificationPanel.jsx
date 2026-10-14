@@ -1,5 +1,11 @@
 import { AREA_CONFIG } from '../data/mockDocuments';
 
+const FALLBACK_CONFIG = {
+  text: 'var(--blue, #2f5fdb)',
+  bg: 'var(--blue-soft, #eaf0fe)',
+  icon: 'bi-building'
+};
+
 export default function NotificationPanel({ notificaciones, onMarkAllRead, onClear }) {
   const noLeidas = notificaciones.filter((n) => !n.leido).length;
 
@@ -34,18 +40,20 @@ export default function NotificationPanel({ notificaciones, onMarkAllRead, onCle
           </div>
         ) : (
           notificaciones.map((n) => {
-            const config = AREA_CONFIG[n.area];
+            const config = AREA_CONFIG[n.area] || FALLBACK_CONFIG;
             return (
               <div className={`notif-row ${n.leido ? '' : 'unread'}`} key={n.id}>
                 <span className="notif-icon" style={{ backgroundColor: config.bg, color: config.text }}>
                   <i className={`bi ${config.icon}`} />
                 </span>
                 <div className="flex-fill">
-                  <div className="small fw-semibold">Correo enviado · Área {n.area}</div>
-                  <div className="small">{n.archivo}</div>
+                  <div className="small fw-semibold">Correo enviado · Área {n.area || 'Asignada'}</div>
+                  <div className="small fw-bold text-dark text-truncate" style={{ maxWidth: '250px' }} title={n.archivo}>
+                    {n.archivo}
+                  </div>
                   <div className="d-flex align-items-center gap-2 text-muted-soft" style={{ fontSize: '0.75rem' }}>
                     <i className="bi bi-envelope-check" style={{ color: 'var(--green)' }} />
-                    {n.correo}
+                    <span className="fw-medium" style={{ color: 'var(--blue, #2f5fdb)' }}>{n.correo}</span>
                     <span>·</span>
                     <span>{n.hora}</span>
                   </div>

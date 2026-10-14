@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import AppHeader from './components/AppHeader';
 import ProcessingModal from './components/ProcessingModal';
 import Chatbot from './components/Chatbot';
@@ -6,23 +6,85 @@ import UploadPage from './pages/UploadPage';
 import ResultsPage from './pages/ResultsPage';
 import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
-   import { uploadDocument, checkJobStatus } from './services/api';
+import {
+  uploadDocument,
+  checkJobStatus,
+  getDocuments,
+  normalizeDocument,
+  getDestinationEmail,
+} from './services/api';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
   const [view, setView] = useState('upload');
   const [documentos, setDocumentos] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [notificaciones, setNotificaciones] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gestor-notificaciones-v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [activeDocument, setActiveDocument] = useState(null);
   const [activeFileName, setActiveFileName] = useState(null);
   const [failedFileName, setFailedFileName] = useState(null);
   const [processingStep, setProcessingStep] = useState('Extrayendo texto...');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Sincronizar notificaciones en localStorage
   useEffect(() => {
-    window.localStorage.removeItem('gestor-documentos-historial');
-    window.localStorage.setItem('gestor-documentos-historial', JSON.stringify(documentos));
-  }, [documentos]);
+    try {
+      localStorage.setItem('gestor-notificaciones-v1', JSON.stringify(notificaciones));
+    } catch (e) {
+      console.warn('Error guardando notificaciones:', e);
+    }
+  }, [notificaciones]);
 
+  // Cargar historial de documentos directamente desde Supabase
+  const cargarDocumentos = useCallback(async () => {
+    try {
+      setLoadingDocs(true);
+      const docs = await getDocuments();
+      if (Array.isArray(docs)) {
+        setDocumentos(docs);
+
+        // Reconciliar la sección de notificaciones con los documentos procesados en Supabase
+        setNotificaciones((prevNotifs) => {
+          const existingIds = new Set(prevNotifs.map((n) => n.id));
+          const nuevasDeBd = [];
+
+          docs.forEach((doc) => {
+            const notifId = `notif-doc-${doc.id}`;
+            if (!existingIds.has(notifId) && (doc.estado === 'Procesado' || doc.processing_status === 'completed')) {
+              nuevasDeBd.push({
+                id: notifId,
+                documentId: doc.id,
+                archivo: doc.nombre || doc.fileName,
+                correo: doc.correoDerivacion || getDestinationEmail(doc.tipoDocumento, doc.area),
+                area: doc.area,
+                hora: doc.hora || 'Reciente',
+                fecha: doc.fecha || '',
+                leido: true,
+              });
+            }
+          });
+
+          return [...prevNotifs, ...nuevasDeBd];
+        });
+      }
+    } catch (err) {
+      console.error('Error cargando historial de Supabase:', err);
+    } finally {
+      setLoadingDocs(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarDocumentos();
+  }, [cargarDocumentos]);
 
   const goToUpload = () => {
     setView('upload');
@@ -30,7 +92,8 @@ export default function App() {
     setActiveFileName(null);
     setFailedFileName(null);
   };
-    const handleStartProcessing = async (fileData) => {
+
+  const handleStartProcessing = async (fileData) => {
     if (!fileData?.file) return;
 
     setActiveFileName(fileData.nombre);
@@ -41,54 +104,64 @@ export default function App() {
       // 1. Subir el archivo y recibir el jobId
       const initialResponse = await uploadDocument(fileData.file);
 
-      // 2. Si está en cola, iniciar el polling (consulta periódica)
+      // 2. Si está en cola, iniciar el polling
       if (initialResponse.status === 'pending' && initialResponse.jobId) {
         setProcessingStep('Procesando con IA (esto puede tomar unos segundos)...');
-        
+
         let jobCompleted = false;
         let attempts = 0;
-        const maxAttempts = 30; // Máximo 60 segundos de espera (30 * 2s)
+        const maxAttempts = 35; // ~70s
 
         while (!jobCompleted && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           attempts++;
-          
+
           const statusResponse = await checkJobStatus(initialResponse.jobId);
-          
+
           if (statusResponse.status === 'completed') {
             jobCompleted = true;
             const resultado = statusResponse.result ?? {};
-            console.log('🔍 Backend devolvió:', statusResponse);  // ← ver qué llega realmente
-            console.log('📄 Resultado extraído:', resultado);
             const now = new Date();
-            const documentoProcesado = {
-              id: `ia-${now.getTime()}`,
-              nombre: resultado.fileName || fileData.nombre,
+
+            const documentoProcesado = normalizeDocument({
+              id: resultado.documentId || `ia-${now.getTime()}`,
+              file_name: resultado.fileName || fileData.nombre,
+              processing_status: 'completed',
               tipoDocumento: resultado.tipoDocumento || 'Desconocido',
               area: resultado.area || 'Sin asignar',
               confianza: resultado.confianza || 0,
-              categoriaConfianza: Math.round(Number(resultado.confianza || 0) * 100),
               derivacion: resultado.derivacion || 'Derivación pendiente',
               campos: resultado.campos || {},
               informeEjecutivo: resultado.informeEjecutivo || {},
               resumenEjecutivo: resultado.resumenEjecutivo || '',
-              estado: 'Procesado',
-              fecha: now.toLocaleDateString('es-PE'),
-              hora: now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-              datos: [],
-              resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`,
-              descargaUrl: resultado.storageUrl || '#',
+              storage_url: resultado.storageUrl,
+              upload_date: now.toISOString(),
+            });
+
+            // Registrar notificación visible con nombre de documento y correo al que se derivó
+            const nuevaNotif = {
+              id: `notif-${now.getTime()}`,
+              documentId: documentoProcesado.id,
+              archivo: documentoProcesado.nombre,
+              correo: documentoProcesado.correoDerivacion,
+              area: documentoProcesado.area,
+              hora: documentoProcesado.hora,
+              fecha: documentoProcesado.fecha,
+              leido: false,
             };
 
+            setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
             setActiveDocument(documentoProcesado);
-            setDocumentos((actuales) => [documentoProcesado, ...actuales]);
+            setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
             setView('results');
-            
+
+            // Refrescar lista completa desde Supabase
+            cargarDocumentos();
+
           } else if (statusResponse.status === 'failed') {
             jobCompleted = true;
             throw new Error(statusResponse.error || 'El procesamiento falló en el servidor');
           } else {
-            // Aún está en 'processing' o 'pending'
             setProcessingStep(`Procesando con IA... (Consulta ${attempts}/${maxAttempts})`);
           }
         }
@@ -98,31 +171,42 @@ export default function App() {
         }
 
       } else {
-        // Fallback: Si en el futuro desactivas la cola, esto maneja la respuesta síncrona
+        // Fallback síncrono
         const resultado = initialResponse;
         const now = new Date();
-        const documentoProcesado = {
-          id: `ia-${now.getTime()}`,
-          nombre: resultado.fileName || fileData.nombre,
+
+        const documentoProcesado = normalizeDocument({
+          id: resultado.documentId || `ia-${now.getTime()}`,
+          file_name: resultado.fileName || fileData.nombre,
+          processing_status: 'completed',
           tipoDocumento: resultado.tipoDocumento || 'Desconocido',
           area: resultado.area || 'Sin asignar',
           confianza: resultado.confianza || 0,
-          categoriaConfianza: Math.round(Number(resultado.confianza || 0) * 100),
           derivacion: resultado.derivacion || 'Derivación pendiente',
           campos: resultado.campos || {},
           informeEjecutivo: resultado.informeEjecutivo || {},
           resumenEjecutivo: resultado.resumenEjecutivo || '',
-          estado: 'Procesado',
-          fecha: now.toLocaleDateString('es-PE'),
-          hora: now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-          datos: [],
-          resumen: `Documento clasificado automáticamente como ${resultado.tipoDocumento || 'desconocido'} en área ${resultado.area || 'desconocida'}.`,
-          descargaUrl: resultado.storageUrl || '#',
+          storage_url: resultado.storageUrl,
+          upload_date: now.toISOString(),
+        });
+
+        const nuevaNotif = {
+          id: `notif-${now.getTime()}`,
+          documentId: documentoProcesado.id,
+          archivo: documentoProcesado.nombre,
+          correo: documentoProcesado.correoDerivacion,
+          area: documentoProcesado.area,
+          hora: documentoProcesado.hora,
+          fecha: documentoProcesado.fecha,
+          leido: false,
         };
 
+        setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
         setActiveDocument(documentoProcesado);
-        setDocumentos((actuales) => [documentoProcesado, ...actuales]);
+        setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
         setView('results');
+
+        cargarDocumentos();
       }
 
     } catch (error) {
@@ -138,25 +222,30 @@ export default function App() {
     }
   };
 
-
   const handleSimulateError = () => {
     setFailedFileName('documento_prueba.pdf');
     setView('error');
   };
 
   const handleVerDocumento = (doc) => {
-    setActiveDocument(doc);  // Los docs del mock deben tener tipoDocumento y area
+    setActiveDocument(doc);
     setActiveFileName(doc.nombre);
     if (doc.estado === 'Fallido') {
       setFailedFileName(doc.nombre);
       setView('error');
-  } else {
-    setView('results');
-  }
-};
+    } else {
+      setView('results');
+    }
+  };
+
   return (
     <div>
-      <AppHeader />
+      <AppHeader
+        onLogoClick={goToUpload}
+        notificaciones={notificaciones}
+        onMarkAllRead={() => setNotificaciones((prev) => prev.map((n) => ({ ...n, leido: true })))}
+        onClearNotifications={() => setNotificaciones([])}
+      />
 
       <div className="app-body">
         {view === 'upload' && (
@@ -187,15 +276,26 @@ export default function App() {
         )}
 
         {view === 'historial' && (
-          <HistorialPage documentos={documentos} onBack={goToUpload} onVerDocumento={handleVerDocumento} />
+          <HistorialPage
+            documentos={documentos}
+            onBack={goToUpload}
+            onVerDocumento={handleVerDocumento}
+            onRefresh={cargarDocumentos}
+            loading={loadingDocs}
+          />
         )}
 
         {view === 'error' && (
-          <ErrorState fileName={failedFileName} message={errorMessage} onRetry={goToUpload} onGoHome={goToUpload} />
+          <ErrorState
+            fileName={failedFileName}
+            message={errorMessage}
+            onRetry={goToUpload}
+            onGoHome={goToUpload}
+          />
         )}
       </div>
 
-      {view === 'processing' && (<ProcessingModal step={processingStep} />)}
+      {view === 'processing' && <ProcessingModal step={processingStep} />}
 
       <Chatbot />
     </div>

@@ -8,7 +8,12 @@ import { AREA_CONFIG } from '../data/mockDocuments';
  */
 export default function EmailToast({ archivo, area, correo, onSent, onClose }) {
   const [estado, setEstado] = useState('enviando');
-  const config = AREA_CONFIG[area];
+  const fallbackConfig = {
+    text: 'var(--blue, #2f5fdb)',
+    bg: 'var(--blue-soft, #eaf0fe)',
+    icon: 'bi-building'
+  };
+  const config = AREA_CONFIG[area] || fallbackConfig;
 
   useEffect(() => {
     const sendTimer = setTimeout(() => {
