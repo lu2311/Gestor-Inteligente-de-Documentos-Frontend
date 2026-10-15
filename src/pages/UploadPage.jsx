@@ -5,17 +5,23 @@ import RecentDocumentsCard from '../components/RecentDocumentsCard';
 import AreaDistributionCard from '../components/AreaDistributionCard';
 import CameraCapture from '../components/CameraCapture';
 
-export default function UploadPage({ documentos, onStartProcessing, onSimulateError, onViewHistorial }) {
+export default function UploadPage({ documentos, onStartProcessing, onStartMobileProcessing, onSimulateError, onViewHistorial }) {
   const [file, setFile] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraNotice, setCameraNotice] = useState(null);
+  const [mobileCapture, setMobileCapture] = useState(false);
 
   const handleFileSelected = (selected) => {
     setFile(selected);
+    setMobileCapture(false);
   };
 
   const handleSubmit = () => {
     if (!file) return;
+    if (mobileCapture && onStartMobileProcessing) {
+      onStartMobileProcessing(file);
+      return;
+    }
     onStartProcessing(file);
   };
 
@@ -23,7 +29,12 @@ export default function UploadPage({ documentos, onStartProcessing, onSimulateEr
   // `photoFile` es un File nativo (JPEG). Si tu Dropzone entrega otro formato (por ejemplo
   // { nombre, size, file }), adáptalo aquí: es el único punto de integración.
   const handleCameraConfirm = (photoFile) => {
-    handleFileSelected(photoFile);
+    setFile({
+      file: photoFile,
+      nombre: photoFile.name,
+      size: `${(photoFile.size / (1024 * 1024)).toFixed(2)} MB`,
+    });
+    setMobileCapture(true);
     setCameraOpen(false);
     setCameraNotice(`Foto capturada correctamente (${photoFile.name}). Ya puedes clasificarla.`);
   };

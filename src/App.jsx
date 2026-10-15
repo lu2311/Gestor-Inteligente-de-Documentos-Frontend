@@ -8,6 +8,7 @@ import HistorialPage from './pages/HistorialPage';
 import ErrorState from './components/ErrorState';
 import {
   uploadDocument,
+  uploadMobileDocument,
   checkJobStatus,
   getDocuments,
   normalizeDocument,
@@ -222,6 +223,39 @@ export default function App() {
     }
   };
 
+  const handleStartMobileProcessing = async (fileData) => {
+    if (!fileData?.file) return;
+
+    setActiveFileName(fileData.nombre);
+    setProcessingStep('Escaneando y generando el documento PDF...');
+    setView('processing');
+
+    try {
+      const resultado = await uploadMobileDocument(fileData.file);
+      const now = new Date();
+      const documentoProcesado = normalizeDocument({
+        id: resultado.documentId,
+        file_name: `${resultado.tipoDocumento || 'documento'}.pdf`,
+        processing_status: 'completed',
+        tipoDocumento: resultado.tipoDocumento,
+        confianza: resultado.confianza,
+        campos: resultado.campos,
+        resumenEjecutivo: resultado.resumenEjecutivo,
+        storage_url: resultado.pdfUrl,
+        upload_date: now.toISOString(),
+      });
+
+      setActiveDocument(documentoProcesado);
+      setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
+      setView('results');
+      cargarDocumentos();
+    } catch (error) {
+      setErrorMessage(error.message || 'No se pudo procesar la captura de cámara.');
+      setFailedFileName(fileData.nombre);
+      setView('error');
+    }
+  };
+
   const handleSimulateError = () => {
     setFailedFileName('documento_prueba.pdf');
     setView('error');
@@ -252,6 +286,7 @@ export default function App() {
           <UploadPage
             documentos={documentos}
             onStartProcessing={handleStartProcessing}
+            onStartMobileProcessing={handleStartMobileProcessing}
             onSimulateError={handleSimulateError}
             onViewHistorial={() => setView('historial')}
           />

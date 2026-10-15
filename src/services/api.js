@@ -23,6 +23,24 @@ export async function uploadDocument(file) {
   return await response.json();
 }
 
+export async function uploadMobileDocument(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_URL}/upload/mobile`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Error ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return await response.json();
+}
+
 export async function checkJobStatus(jobId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);

@@ -22,9 +22,9 @@ export default function AreaDistributionCard({ documentos = [] }) {
             <div className="area-progress-track">
               <div className="area-progress-fill" style={{ width: `${pct}%`, backgroundColor: config.text }} />
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
