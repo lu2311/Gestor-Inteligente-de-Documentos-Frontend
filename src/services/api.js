@@ -15,7 +15,16 @@ export async function uploadDocument(file) {
   });
 
   if (!response.ok) {
-    const error = new Error(`Error ${response.status}`);
+    let details = '';
+    try {
+      const body = await response.json();
+      details = [body.error, ...(Array.isArray(body.errores) ? body.errores : [])]
+        .filter(Boolean)
+        .join('. ');
+    } catch {
+      // Keep the HTTP status when the server does not return JSON.
+    }
+    const error = new Error(details || `Error ${response.status}`);
     error.status = response.status;
     throw error;
   }
