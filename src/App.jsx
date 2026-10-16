@@ -9,7 +9,7 @@ import ErrorState from './components/ErrorState';
 import {
   uploadDocument,
   uploadMobileDocument,
-  checkJobStatus,
+  waitForJob,
   getDocuments,
   normalizeDocument,
   getDestinationEmail,
@@ -109,67 +109,48 @@ export default function App() {
       if (initialResponse.status === 'pending' && initialResponse.jobId) {
         setProcessingStep('Procesando con IA (esto puede tomar unos segundos)...');
 
-        let jobCompleted = false;
-        let attempts = 0;
-        const maxAttempts = 35; // ~70s
+        const statusResponse = await waitForJob(initialResponse.jobId, {
+          onProgress: (attempt, maxAttempts) =>
+            setProcessingStep(`Procesando con IA... (Consulta ${attempt}/${maxAttempts})`),
+        });
 
-        while (!jobCompleted && attempts < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          attempts++;
+        const resultado = statusResponse.result ?? {};
+        const now = new Date();
 
-          const statusResponse = await checkJobStatus(initialResponse.jobId);
+        const documentoProcesado = normalizeDocument({
+          id: resultado.documentId || `ia-${now.getTime()}`,
+          file_name: resultado.fileName || fileData.nombre,
+          processing_status: 'completed',
+          tipoDocumento: resultado.tipoDocumento || 'Desconocido',
+          area: resultado.area || 'Sin asignar',
+          confianza: resultado.confianza || 0,
+          derivacion: resultado.derivacion || 'Derivación pendiente',
+          campos: resultado.campos || {},
+          informeEjecutivo: resultado.informeEjecutivo || {},
+          resumenEjecutivo: resultado.resumenEjecutivo || '',
+          storage_url: resultado.storageUrl,
+          upload_date: now.toISOString(),
+        });
 
-          if (statusResponse.status === 'completed') {
-            jobCompleted = true;
-            const resultado = statusResponse.result ?? {};
-            const now = new Date();
+        // Registrar notificación visible con nombre de documento y correo al que se derivó
+        const nuevaNotif = {
+          id: `notif-${now.getTime()}`,
+          documentId: documentoProcesado.id,
+          archivo: documentoProcesado.nombre,
+          correo: documentoProcesado.correoDerivacion,
+          area: documentoProcesado.area,
+          hora: documentoProcesado.hora,
+          fecha: documentoProcesado.fecha,
+          leido: false,
+        };
 
-            const documentoProcesado = normalizeDocument({
-              id: resultado.documentId || `ia-${now.getTime()}`,
-              file_name: resultado.fileName || fileData.nombre,
-              processing_status: 'completed',
-              tipoDocumento: resultado.tipoDocumento || 'Desconocido',
-              area: resultado.area || 'Sin asignar',
-              confianza: resultado.confianza || 0,
-              derivacion: resultado.derivacion || 'Derivación pendiente',
-              campos: resultado.campos || {},
-              informeEjecutivo: resultado.informeEjecutivo || {},
-              resumenEjecutivo: resultado.resumenEjecutivo || '',
-              storage_url: resultado.storageUrl,
-              upload_date: now.toISOString(),
-            });
+        setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
+        setActiveDocument(documentoProcesado);
+        setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
+        setView('results');
 
-            // Registrar notificación visible con nombre de documento y correo al que se derivó
-            const nuevaNotif = {
-              id: `notif-${now.getTime()}`,
-              documentId: documentoProcesado.id,
-              archivo: documentoProcesado.nombre,
-              correo: documentoProcesado.correoDerivacion,
-              area: documentoProcesado.area,
-              hora: documentoProcesado.hora,
-              fecha: documentoProcesado.fecha,
-              leido: false,
-            };
-
-            setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
-            setActiveDocument(documentoProcesado);
-            setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
-            setView('results');
-
-            // Refrescar lista completa desde Supabase
-            cargarDocumentos();
-
-          } else if (statusResponse.status === 'failed') {
-            jobCompleted = true;
-            throw new Error(statusResponse.error || 'El procesamiento falló en el servidor');
-          } else {
-            setProcessingStep(`Procesando con IA... (Consulta ${attempts}/${maxAttempts})`);
-          }
-        }
-
-        if (!jobCompleted) {
-          throw new Error('Tiempo de espera agotado. El documento es muy grande o el servidor está ocupado.');
-        }
+        // Refrescar lista completa desde Supabase
+        cargarDocumentos();
 
       } else {
         // Fallback síncrono
@@ -227,11 +208,28 @@ export default function App() {
     if (!fileData?.file) return;
 
     setActiveFileName(fileData.nombre);
-    setProcessingStep('Escaneando y generando el documento PDF...');
+    setProcessingStep('Enviando captura a la cola...');
     setView('processing');
 
     try {
-      const resultado = await uploadMobileDocument(fileData.file);
+      const initialResponse = await uploadMobileDocument(fileData.file);
+
+      let resultado;
+      if (initialResponse.status === 'pending' && initialResponse.jobId) {
+        // El OCR + IA puede tardar varios minutos: consultamos el estado del job.
+        setProcessingStep('Analizando el documento con IA (puede tardar unos minutos)...');
+
+        const statusResponse = await waitForJob(initialResponse.jobId, {
+          onProgress: (attempt, maxAttempts) =>
+            setProcessingStep(`Analizando con IA... (Consulta ${attempt}/${maxAttempts})`),
+        });
+
+        resultado = statusResponse.result ?? {};
+      } else {
+        // Fallback síncrono (QUEUE_ENABLED=false)
+        resultado = initialResponse;
+      }
+
       const now = new Date();
       const documentoProcesado = normalizeDocument({
         id: resultado.documentId,
@@ -241,7 +239,7 @@ export default function App() {
         confianza: resultado.confianza,
         campos: resultado.campos,
         resumenEjecutivo: resultado.resumenEjecutivo,
-        storage_url: resultado.pdfUrl,
+        storage_url: resultado.pdfUrl || resultado.storageUrl,
         upload_date: now.toISOString(),
       });
 
