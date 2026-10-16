@@ -64,6 +64,44 @@ export async function checkJobStatus(jobId) {
   }
 }
 
+// --- Espera de jobs en cola -------------------------------------------------
+// El backend espera hasta OLLAMA_TIMEOUT_MS (por defecto 600000 ms = 10 min) a
+// que Ollama responda. El presupuesto de espera del frontend DEBE ser mayor para
+// que el cliente reciba el estado real del job (completed/failed) en lugar de
+// rendirse antes que el backend ("Tiempo de espera agotado" prematuro).
+// Se puede sobrescribir con VITE_JOB_TIMEOUT_MS.
+export const JOB_POLL_INTERVAL_MS = 2000;
+export const JOB_POLL_TIMEOUT_MS = Number(import.meta.env.VITE_JOB_TIMEOUT_MS) || 720000; // 12 min
+
+/**
+ * Consulta el estado de un job hasta que termine o hasta agotar el presupuesto.
+ * @param {string} jobId
+ * @param {{ onProgress?: (attempt: number, maxAttempts: number) => void }} [options]
+ * @returns {Promise<{ status: 'completed', result: unknown }>}
+ * @throws {Error} Si el job falla en el servidor o si se agota el tiempo.
+ */
+export async function waitForJob(jobId, { onProgress } = {}) {
+  const maxAttempts = Math.max(1, Math.ceil(JOB_POLL_TIMEOUT_MS / JOB_POLL_INTERVAL_MS));
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, JOB_POLL_INTERVAL_MS));
+
+    const statusResponse = await checkJobStatus(jobId);
+
+    if (statusResponse.status === 'completed') {
+      return statusResponse;
+    }
+
+    if (statusResponse.status === 'failed') {
+      throw new Error(statusResponse.error || 'El procesamiento falló en el servidor');
+    }
+
+    onProgress?.(attempt, maxAttempts);
+  }
+
+  throw new Error('Tiempo de espera agotado. El servidor está ocupado, inténtalo de nuevo.');
+}
+
 export function normalizeDocument(rawDoc) {
   if (!rawDoc) return null;
 
