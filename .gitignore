@@ -4,6 +4,7 @@ dist
 *.log
 .DS_Store
 coverage
+test-results
 
 # Vite
 .vite
@@ -18,3 +19,7 @@ coverage
 .vscode
 *.swp
 *.swo
+
+# Graphify
+graphify-out/
+.graphify_*
