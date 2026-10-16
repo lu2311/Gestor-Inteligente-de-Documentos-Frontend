@@ -1,18 +1,75 @@
-export default function AppHeader() {
+import { useEffect, useRef, useState } from 'react';
+import NotificationPanel from './NotificationPanel';
+
+export default function AppHeader({
+  onLogoClick = () => { },
+  notificaciones = [],
+  onMarkAllRead = () => { },
+  onClearNotifications = () => { },
+}) {
+  const [panelOpen, setPanelOpen] = useState(false);
+  const panelRef = useRef(null);
+
+  const noLeidas = notificaciones.filter((n) => !n.leido).length;
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target)) {
+        setPanelOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handler);
+
+    return () => {
+      document.removeEventListener('mousedown', handler);
+    };
+  }, []);
+
+  const togglePanel = () => {
+    setPanelOpen((open) => {
+      if (!open) onMarkAllRead();
+      return !open;
+    });
+  };
+
   return (
     <header className="app-header">
-      <div className="brand">
+      <button type="button" className="brand" onClick={onLogoClick}>
         <i className="bi bi-file-earmark-text" />
-        Gestor Inteligente de Documentos
-      </div>
-      <div className="d-flex align-items-center gap-3">
-        <span className="ia-status-pill">
+        <span className="brand-text">Gestor Inteligente de Documentos</span>
+      </button>
+
+      <div className="d-flex align-items-center gap-1">
+        {/*<span className="ia-status-pill me-2">
           <span className="dot" />
           IA Activa
-        </span>
-        <span className="d-flex align-items-center gap-2 text-muted-soft small">
+        </span>*/}
+
+        <div className="position-relative" ref={panelRef}>
+          <button
+            type="button"
+            className="header-icon-btn"
+            onClick={togglePanel}
+            aria-label="Notificaciones"
+            aria-expanded={panelOpen}
+          >
+            <i className="bi bi-bell" />
+            <span className="d-none d-sm-inline">Notificaciones</span>
+            {noLeidas > 0 && <span className="notif-dot" />}
+          </button>
+          {panelOpen && (
+            <NotificationPanel
+              notificaciones={notificaciones}
+              onMarkAllRead={onMarkAllRead}
+              onClear={() => { onClearNotifications(); setPanelOpen(false); }}
+            />
+          )}
+        </div>
+
+        <span className="header-icon-btn">
           <i className="bi bi-person-circle" />
-          Mi Cuenta
+          <span className="d-none d-sm-inline">Mi Cuenta</span>
         </span>
       </div>
     </header>

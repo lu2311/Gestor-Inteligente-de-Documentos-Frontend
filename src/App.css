@@ -66,6 +66,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
 .app-header .brand {
@@ -74,6 +77,8 @@ body {
   gap: 0.55rem;
   font-weight: 700;
   font-size: 1.05rem;
+  border: none;
+  background: transparent;
 }
 
 .app-header .brand i {
@@ -101,11 +106,41 @@ body {
   display: inline-block;
 }
 
+.header-icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.header-icon-btn:hover {
+  background-color: var(--bg-page);
+  color: var(--text);
+}
+
+.notif-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--red);
+  border: 2px solid var(--bg-card);
+}
+
 .app-body {
   max-width: 1180px;
   margin: 0 auto;
   padding: 1.75rem 1.5rem 3rem;
 }
+
 
 /* ---------- KPI area summary ---------- */
 .kpi-mini {
@@ -144,6 +179,7 @@ body {
 /* ---------- Dropzone ---------- */
 .dropzone {
   border: 2px dashed var(--border);
+  margin: 1.5rem 0;
   border-radius: 16px;
   padding: 3rem 1.5rem;
   text-align: center;
@@ -254,15 +290,59 @@ body {
 }
 
 .area-progress-track {
+  width: 100%;
   height: 6px;
-  border-radius: 999px;
-  background-color: #eef0f4;
   overflow: hidden;
+  border-radius: 999px;
+  background-color: var(--border);
 }
 
 .area-progress-fill {
   height: 100%;
   border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.area-distribution-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 8px;
+}
+
+.area-distribution-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.area-distribution-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
+.area-distribution-label {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.area-distribution-count {
+  display: block;
+  align-self: flex-start;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* ---------- Processing modal ---------- */
@@ -296,7 +376,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .processing-progress {
@@ -464,4 +546,754 @@ body {
   background-color: #dd9e00;
   border-color: #dd9e00;
   color: #1f2430;
+}
+
+/* ---------- Email toast ---------- */
+.email-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(20, 30, 60, 0.16);
+  overflow: hidden;
+  z-index: 1080;
+  animation: toastIn 0.35s ease-out both;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.email-toast-progress {
+  height: 3px;
+  background-color: var(--border);
+  overflow: hidden;
+}
+
+.email-toast-progress-fill {
+  height: 100%;
+  background-color: var(--green);
+  animation: drainRight 5s linear forwards;
+}
+
+@keyframes drainRight {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.email-toast-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---------- Notifications ---------- */
+.notif-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  max-height: 420px;
+  background-color: var(--bg-card);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(20, 30, 60, 0.16);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 1060;
+}
+
+.notif-panel-header {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-panel-body {
+  overflow-y: auto;
+}
+
+.notif-row {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-row:last-child {
+  border-bottom: none;
+}
+
+.notif-row.unread {
+  background-color: var(--blue-soft);
+}
+
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---------- Chatbot ---------- */
+.chatbot-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--blue);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 6px 20px rgba(47, 95, 219, 0.4);
+  z-index: 1070;
+}
+
+.chatbot-fab .badge-unread {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: var(--red);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatbot-panel {
+  position: fixed;
+  bottom: 92px;
+  right: 24px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  height: 520px;
+  max-height: calc(100vh - 140px);
+  background-color: var(--bg-card);
+  border-radius: 18px;
+  box-shadow: 0 10px 40px rgba(20, 30, 60, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1070;
+}
+
+.chatbot-header {
+  background-color: var(--blue);
+  color: #fff;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.chatbot-header .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatbot-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.9rem;
+  background-color: var(--bg-page);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.chat-bubble {
+  max-width: 88%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.chat-bubble.bot {
+  background-color: var(--bg-card);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.chat-bubble.user {
+  background-color: var(--blue);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.chat-doc-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+}
+
+.chat-doc-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-quick-btn {
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  color: var(--text);
+}
+
+.chatbot-typing {
+  display: inline-flex;
+  gap: 0.25rem;
+  background-color: var(--bg-card);
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  padding: 0.6rem 0.85rem;
+  align-self: flex-start;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.chatbot-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #9aa2b1;
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+
+.chatbot-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chatbot-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typingBounce {
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+
+/* =====================================================================
+   RESPONSIVE + CÁMARA  (bloque añadido)
+
+   Estrategia mobile-first con los breakpoints de Bootstrap:
+     < 576px  móvil   |  576–767px  móvil grande  |  768–991px  tablet  |  ≥ 992px  escritorio
+
+   Las reglas "base" valen para todos los tamaños; las @media solo ajustan.
+   El breakpoint móvil (575.98px) debe coincidir con MOBILE_QUERY en Chatbot.jsx.
+   ===================================================================== */
+
+:root {
+  /* Altura mínima del header: la usan los paneles flotantes en móvil para ubicarse bajo él. */
+  --header-h: 3.5rem;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+/* ---------- Base (todos los tamaños) ---------- */
+.app-header {
+  min-height: var(--header-h);
+  gap: 0.75rem;
+}
+
+.app-header .brand {
+  min-width: 0;
+  text-align: left;
+}
+
+.app-header .brand-text {
+  line-height: 1.15;
+}
+
+/* Deja espacio para que el botón flotante del chatbot no tape contenido. */
+.app-body {
+  padding-bottom: 5.5rem;
+}
+
+.processing-overlay {
+  padding: 1rem;
+}
+
+/* Evita desbordes con nombres de archivo largos. */
+.file-preview {
+  max-width: 100%;
+}
+
+.file-preview>div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recent-doc-row>div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin-right: 0.5rem;
+}
+
+.notif-row>.flex-fill {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.historial-table tbody td:first-child {
+  overflow-wrap: anywhere;
+}
+
+/* Tarjetas laterales de la pantalla de subida:
+   1 columna en móvil, 2 en tablet y apiladas en escritorio (dentro de col-lg-4). */
+.sidebar-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .sidebar-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Cámara (CameraCapture) ---------- */
+/* Por encima del botón flotante del chatbot (1070) para que no tape "Tomar foto". */
+.camera-backdrop {
+  z-index: 1085;
+}
+
+.camera-modal {
+  z-index: 1090;
+}
+
+@supports (height: 100dvh) {
+  .camera-modal {
+    height: 100dvh;
+  }
+}
+
+.camera-modal .modal-dialog {
+  --bs-modal-width: 640px;
+}
+
+.camera-content {
+  border: 0;
+  border-radius: 18px;
+}
+
+.camera-header {
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  border-bottom-color: var(--border);
+}
+
+.camera-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1.25rem;
+}
+
+.camera-footer {
+  border-top: 0;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.camera-footer .btn {
+  min-height: 44px;
+}
+
+.camera-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 14rem;
+  max-height: calc(100vh - 17rem);
+  max-height: calc(100dvh - 17rem);
+  background-color: #111827;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* contain: lo que se ve en el encuadre es exactamente lo que se captura (sin recortes). */
+.camera-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #111827;
+}
+
+.camera-media.is-hidden {
+  visibility: hidden;
+}
+
+.camera-overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 26rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+}
+
+.camera-overlay-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.camera-overlay-text {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ---------- Chatbot: botón de cerrar (X) y controles ---------- */
+.chatbot-close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.chatbot-close:hover,
+.chatbot-close:focus-visible {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-send {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.chatbot-body {
+  overscroll-behavior: contain;
+}
+
+/* ---------- Móvil (< 576px) ---------- */
+@media (max-width: 575.98px) {
+
+  /* Header y contenedor */
+  .app-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .app-header .brand {
+    font-size: 0.9rem;
+    gap: 0.45rem;
+  }
+
+  /* Zonas táctiles de 44px (iconos sin texto en móvil). */
+  .header-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    padding: 0.4rem;
+  }
+
+  .app-body {
+    padding: 1rem 0.75rem 5.5rem;
+  }
+
+  /* Resumen por área: la 5.ª tarjeta (huérfana) ocupa todo el ancho. */
+  .summary-wrap .row>.col-6:last-child:nth-child(odd) {
+    width: 100%;
+  }
+
+  .kpi-mini {
+    padding: 0.7rem 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .kpi-mini .icon-box {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Subida */
+  .dropzone {
+    padding: 2rem 1rem;
+    margin: 1rem 0;
+  }
+
+  .file-preview {
+    width: 100%;
+  }
+
+  /* Procesando, resultados y avisos */
+  .processing-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .result-check-circle {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+
+  .email-toast {
+    top: calc(var(--header-h) + 0.5rem);
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: none;
+  }
+
+  /* Notificaciones: panel fijo a lo ancho de la pantalla, bajo el header. */
+  .notif-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 0.25rem);
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: none;
+    margin-top: 0;
+    max-height: calc(100vh - var(--header-h) - 1.5rem);
+    max-height: calc(100dvh - var(--header-h) - 1.5rem);
+  }
+
+  /* Historial: 5 columnas no caben en un teléfono, así que cada fila pasa a ser una
+     tarjeta: nombre arriba; categoría, estado y "Ver →" debajo; fecha al pie.
+     (Depende del orden de columnas: Nombre, Categoría, Fecha, Estado, Acción.) */
+  .historial-table,
+  .historial-table tbody {
+    display: block;
+  }
+
+  .historial-table thead {
+    display: none;
+  }
+
+  .historial-table tbody tr {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.45rem 0.6rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .historial-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .historial-table tbody td {
+    display: block;
+    padding: 0;
+    border: 0;
+    font-size: 0.85rem;
+  }
+
+  .historial-table tbody td:nth-child(1) {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+  }
+
+  .historial-table tbody td:nth-child(2) {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .historial-table tbody td:nth-child(4) {
+    grid-row: 2;
+    grid-column: 2;
+  }
+
+  .historial-table tbody td:nth-child(5) {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .historial-table tbody td:nth-child(3) {
+    grid-row: 3;
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+  }
+
+  .filter-chip {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .page-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Cámara: pantalla completa (el modal ya usa modal-fullscreen-sm-down). */
+  .camera-content {
+    border-radius: 0;
+  }
+
+  .camera-header {
+    padding: 0.75rem 1rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .camera-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .camera-stage {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 0;
+    max-height: none;
+    border-radius: 12px;
+  }
+
+  .camera-footer {
+    flex-wrap: nowrap;
+    padding: 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Chatbot: pantalla completa con la X para minimizar. */
+  .chatbot-fab {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+
+  .chatbot-fab.is-open {
+    display: none;
+    /* el panel cubre la pantalla; se cierra con la X del header */
+  }
+
+  .chatbot-panel {
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .chatbot-header {
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .chatbot-close {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .chatbot-body {
+    padding: 0.75rem;
+  }
+
+  .chat-bubble {
+    max-width: 92%;
+    font-size: 0.9rem;
+  }
+
+  .chatbot-input-row {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 16px evita que iOS haga zoom automático al enfocar el campo. */
+  .chatbot-input {
+    font-size: 16px;
+  }
+
+  .chatbot-send {
+    width: 44px;
+    height: 44px;
+  }
+
+  body.chatbot-open {
+    overflow: hidden;
+  }
 }

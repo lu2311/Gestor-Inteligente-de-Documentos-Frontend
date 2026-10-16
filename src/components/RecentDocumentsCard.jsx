@@ -10,8 +10,12 @@ export default function RecentDocumentsCard({ documentos, onViewHistorial }) {
       {recientes.map((doc) => (
         <div className="recent-doc-row" key={doc.id}>
           <div>
-            <div className="small fw-semibold">{doc.nombre}</div>
-            <CategoryBadge area={doc.area} />
+            <div className="small fw-semibold text-truncate" style={{ maxWidth: '200px' }} title={doc.nombre}>
+              {doc.nombre}
+            </div>
+            <div className="d-flex align-items-center gap-1 mt-1">
+              <CategoryBadge tipoDocumento={doc.tipoDocumento} area={doc.area} />
+            </div>
           </div>
           <StatusBadge estado={doc.estado} />
         </div>

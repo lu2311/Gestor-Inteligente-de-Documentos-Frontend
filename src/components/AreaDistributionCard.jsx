@@ -1,7 +1,7 @@
-import { AREAS, AREA_CONFIG } from '../data/mockDocuments';
+import { AREAS, AREA_CONFIG, formatAreaName } from '../data/mockDocuments';
 
-export default function AreaDistributionCard({ documentos }) {
-  const total = documentos.length || 1;
+export default function AreaDistributionCard({ documentos = [] }) {
+  const total = documentos.length;
 
   return (
     <div className="card-plain p-3">
@@ -15,7 +15,7 @@ export default function AreaDistributionCard({ documentos }) {
             <div className="d-flex justify-content-between align-items-center small mb-1">
               <span className="d-flex align-items-center gap-2">
                 <i className={`bi ${config.icon}`} style={{ color: config.text }} />
-                {area}
+                {formatAreaName(area)}
               </span>
               <span className="text-muted-soft">{count} docs</span>
             </div>

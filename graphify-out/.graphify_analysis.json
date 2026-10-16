@@ -1,0 +1,207 @@
+{
+  "communities": {
+    "0": [
+      "src_components_areadistributioncard",
+      "src_components_areadistributioncard_areadistributioncard",
+      "src_components_areasummaryrow",
+      "src_components_areasummaryrow_areasummaryrow",
+      "src_components_demodocslist",
+      "src_components_demodocslist_demodocslist",
+      "src_components_dropzone",
+      "src_components_dropzone_dropzone",
+      "src_components_dropzone_formatsize",
+      "src_components_emailtoast",
+      "src_components_emailtoast_emailtoast",
+      "src_components_recentdocumentscard_recentdocumentscard",
+      "src_data_mockdocuments",
+      "src_data_mockdocuments_area_config",
+      "src_data_mockdocuments_areas",
+      "src_data_mockdocuments_demofiles",
+      "src_data_mockdocuments_mockdocuments",
+      "src_data_mockdocuments_processing_steps",
+      "src_pages_uploadpage"
+    ],
+    "1": [
+      "src_app",
+      "src_app_app",
+      "src_components_appheader",
+      "src_components_appheader_appheader",
+      "src_components_errorstate",
+      "src_components_errorstate_errorstate",
+      "src_components_errorstate_sugerencias",
+      "src_components_notificationpanel",
+      "src_components_notificationpanel_notificationpanel",
+      "src_components_processingmodal",
+      "src_components_processingmodal_processingmodal",
+      "src_main",
+      "src_pages_uploadpage_uploadpage",
+      "src_services_api",
+      "src_services_api_uploaddocument"
+    ],
+    "2": [
+      "package",
+      "package_devdependencies",
+      "package_devdependencies_vite",
+      "package_devdependencies_vitejs_plugin_react",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_preview",
+      "package_type",
+      "package_version",
+      "vite",
+      "vitejs_plugin_react"
+    ],
+    "3": [
+      "src_components_categorybadge",
+      "src_components_categorybadge_categorybadge",
+      "src_components_categoryconfidencecard",
+      "src_components_categoryconfidencecard_categoryconfidencecard",
+      "src_components_historialtable",
+      "src_components_recentdocumentscard",
+      "src_components_statusbadge",
+      "src_components_statusbadge_statusbadge",
+      "src_data_mockdocuments_status_config",
+      "src_data_mockdocuments_tipos_config"
+    ],
+    "4": [
+      "bootstrap",
+      "bootstrap_icons",
+      "package_dependencies",
+      "package_dependencies_bootstrap",
+      "package_dependencies_bootstrap_icons",
+      "package_dependencies_react",
+      "package_dependencies_react_dom",
+      "react",
+      "react_dom"
+    ],
+    "5": [
+      "src_components_filterchips",
+      "src_components_filterchips_filterchips",
+      "src_components_historialtable_historialtable",
+      "src_components_pagination",
+      "src_components_pagination_pagination",
+      "src_components_searchbar",
+      "src_components_searchbar_searchbar",
+      "src_pages_historialpage",
+      "src_pages_historialpage_historialpage"
+    ],
+    "6": [
+      "src_components_derivationstatuscard",
+      "src_components_derivationstatuscard_derivationstatuscard",
+      "src_components_executivereport",
+      "src_components_executivereport_executivereport",
+      "src_components_summarybox",
+      "src_components_summarybox_summarybox",
+      "src_pages_resultspage",
+      "src_pages_resultspage_resultspage"
+    ],
+    "7": [
+      "src_components_chatbot",
+      "src_components_chatbot_buscardocumentos",
+      "src_components_chatbot_busquedas_rapidas",
+      "src_components_chatbot_chatbot",
+      "src_components_chatbot_construirrespuesta",
+      "src_components_chatbot_saludo_inicial"
+    ],
+    "8": [
+      "src_data_classify",
+      "src_data_classify_all_areas",
+      "src_data_classify_buildresult",
+      "src_data_classify_category_templates",
+      "src_data_classify_classifydocument",
+      "src_data_classify_rules"
+    ],
+    "9": [
+      "src_components_extracteddatagrid",
+      "src_components_extracteddatagrid_extracteddatagrid"
+    ],
+    "10": [
+      "vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.19298245614035087,
+    "1": 0.2,
+    "2": 0.14285714285714285,
+    "3": 0.3333333333333333,
+    "4": 0.2222222222222222,
+    "5": 0.3055555555555556,
+    "6": 0.35714285714285715,
+    "7": 0.4666666666666667,
+    "8": 0.4,
+    "9": 1.0,
+    "10": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_data_mockdocuments_area_config",
+      "label": "AREA_CONFIG",
+      "degree": 8
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 4
+    },
+    {
+      "id": "src_components_categorybadge_categorybadge",
+      "label": "CategoryBadge()",
+      "degree": 4
+    },
+    {
+      "id": "src_components_chatbot_chatbot",
+      "label": "Chatbot()",
+      "degree": 4
+    },
+    {
+      "id": "src_data_mockdocuments_areas",
+      "label": "AREAS",
+      "degree": 4
+    },
+    {
+      "id": "src_app_app",
+      "label": "App()",
+      "degree": 3
+    },
+    {
+      "id": "src_components_dropzone_dropzone",
+      "label": "Dropzone()",
+      "degree": 3
+    },
+    {
+      "id": "src_components_statusbadge_statusbadge",
+      "label": "StatusBadge()",
+      "degree": 3
+    },
+    {
+      "id": "src_data_mockdocuments_tipos_config",
+      "label": "TIPOS_CONFIG",
+      "degree": 3
+    },
+    {
+      "id": "src_services_api_uploaddocument",
+      "label": "uploadDocument()",
+      "degree": 3
+    }
+  ],
+  "surprises": [
+    {
+      "source": "App()",
+      "target": "uploadDocument()",
+      "source_files": [
+        "src/App.jsx",
+        "src/services/api.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}
