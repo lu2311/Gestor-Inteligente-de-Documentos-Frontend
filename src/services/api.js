@@ -1,9 +1,17 @@
-import { getDestinationEmail, getAreaByDocType, cleanTextEncoding, formatAreaName } from '../data/mockDocuments';
+import {
+  getDestinationEmail,
+  getAreaByDocType,
+  cleanTextEncoding,
+  formatAreaName,
+} from '../data/mockDocuments';
 export { getDestinationEmail, getAreaByDocType, cleanTextEncoding, formatAreaName };
 
-const API_URL = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
-  ? import.meta.env.VITE_API_URL
-  : (typeof window !== 'undefined' && window.location.port === '5173' ? 'http://localhost:3000' : '');
+const API_URL =
+  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+    ? import.meta.env.VITE_API_URL
+    : typeof window !== 'undefined' && window.location.port === '5173'
+      ? 'http://localhost:3000'
+      : '';
 
 export async function uploadDocument(file) {
   const formData = new FormData();
@@ -54,7 +62,9 @@ export async function checkJobStatus(jobId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
   try {
-    const response = await fetch(`${API_URL}/upload/status/${jobId}`, { signal: controller.signal });
+    const response = await fetch(`${API_URL}/upload/status/${jobId}`, {
+      signal: controller.signal,
+    });
     clearTimeout(timeoutId);
     if (!response.ok) throw new Error(`Error ${response.status}`);
     return await response.json();
@@ -111,17 +121,19 @@ export function normalizeDocument(rawDoc) {
 
   const derivations = Array.isArray(rawDoc.document_derivations)
     ? rawDoc.document_derivations
-    : (rawDoc.document_derivations ? [rawDoc.document_derivations] : []);
+    : rawDoc.document_derivations
+      ? [rawDoc.document_derivations]
+      : [];
 
   const firstDerivation = derivations[0] || {};
 
   // Formateo de fecha y hora local
   const dateObj = rawDoc.upload_date ? new Date(rawDoc.upload_date) : new Date();
   const fecha = isNaN(dateObj.getTime())
-    ? (rawDoc.fecha || '')
+    ? rawDoc.fecha || ''
     : dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' });
   const hora = isNaN(dateObj.getTime())
-    ? (rawDoc.hora || '')
+    ? rawDoc.hora || ''
     : dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 
   // Estado unificado
@@ -149,7 +161,8 @@ export function normalizeDocument(rawDoc) {
     'INTENDENCIA_RECAUDACION_CONTROL_MASIVO';
 
   // Confianza calculada
-  const rawConf = rawDoc.confianza ?? analysis?.confidence_percentage ?? (estado === 'Fallido' ? 0 : 0.98);
+  const rawConf =
+    rawDoc.confianza ?? analysis?.confidence_percentage ?? (estado === 'Fallido' ? 0 : 0.98);
   const confianza = Number(rawConf) > 1 ? Number(rawConf) / 100 : Number(rawConf);
   const categoriaConfianza = Math.round(confianza * 100);
 
@@ -157,7 +170,12 @@ export function normalizeDocument(rawDoc) {
   const campos = { ...(rawDoc.campos || {}) };
   if (Array.isArray(rawDoc.extracted_metadata)) {
     rawDoc.extracted_metadata.forEach((m) => {
-      if (m.field_name && m.field_value !== null && m.field_value !== undefined && m.field_value !== '') {
+      if (
+        m.field_name &&
+        m.field_value !== null &&
+        m.field_value !== undefined &&
+        m.field_value !== ''
+      ) {
         campos[m.field_name] = String(m.field_value);
       }
     });
@@ -176,13 +194,15 @@ export function normalizeDocument(rawDoc) {
 
   const correoDerivacion = rawDoc.correoDerivacion || getDestinationEmail(tipoDocumento, area);
 
-  const cleanResumenEjecutivo = cleanTextEncoding(rawDoc.resumenEjecutivo || analysis?.ai_summary || '');
+  const cleanResumenEjecutivo = cleanTextEncoding(
+    rawDoc.resumenEjecutivo || analysis?.ai_summary || '',
+  );
   const cleanResumen = cleanTextEncoding(
     rawDoc.resumen ||
       analysis?.ai_summary ||
       (estado === 'Fallido'
         ? 'El archivo no pudo ser procesado o no contiene texto legible.'
-        : `Documento clasificado automáticamente como ${tipoDocumento} en área ${areaFormateada}.`)
+        : `Documento clasificado automáticamente como ${tipoDocumento} en área ${areaFormateada}.`),
   );
 
   return {

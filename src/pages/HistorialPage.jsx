@@ -6,7 +6,13 @@ import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 6;
 
-export default function HistorialPage({ documentos = [], onBack, onVerDocumento, onRefresh, loading = false }) {
+export default function HistorialPage({
+  documentos = [],
+  onBack,
+  onVerDocumento,
+  onRefresh,
+  loading = false,
+}) {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [page, setPage] = useState(1);
@@ -32,7 +38,11 @@ export default function HistorialPage({ documentos = [], onBack, onVerDocumento,
   return (
     <div>
       <div className="d-flex align-items-center gap-2 mb-3">
-        <button type="button" className="btn btn-link text-muted-soft text-decoration-none p-0" onClick={onBack}>
+        <button
+          type="button"
+          className="btn btn-link text-muted-soft text-decoration-none p-0"
+          onClick={onBack}
+        >
           ← Volver
         </button>
         <span className="text-muted-soft">/</span>
@@ -54,8 +64,21 @@ export default function HistorialPage({ documentos = [], onBack, onVerDocumento,
         </div>
       </div>
 
-      <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
-      <FilterChips documentos={documentos} activeFilter={activeFilter} onChange={(f) => { setActiveFilter(f); setPage(1); }} />
+      <SearchBar
+        value={search}
+        onChange={(v) => {
+          setSearch(v);
+          setPage(1);
+        }}
+      />
+      <FilterChips
+        documentos={documentos}
+        activeFilter={activeFilter}
+        onChange={(f) => {
+          setActiveFilter(f);
+          setPage(1);
+        }}
+      />
 
       <div className="card-plain p-3">
         {loading && documentos.length === 0 ? (

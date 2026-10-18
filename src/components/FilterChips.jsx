@@ -13,8 +13,14 @@ export default function FilterChips({ documentos, activeFilter, onChange }) {
     <div className="d-flex flex-wrap gap-2 mb-3">
       {chips.map((chip) => {
         const isActive = activeFilter === chip;
-        const icon = chip === 'Todos' ? 'bi-grid' : chip === 'Fallidos' ? 'bi-x-circle' : (AREA_CONFIG[chip]?.icon || 'bi-building');
-        const label = chip === 'Todos' ? 'Todos' : chip === 'Fallidos' ? 'Fallidos' : formatAreaName(chip);
+        const icon =
+          chip === 'Todos'
+            ? 'bi-grid'
+            : chip === 'Fallidos'
+              ? 'bi-x-circle'
+              : AREA_CONFIG[chip]?.icon || 'bi-building';
+        const label =
+          chip === 'Todos' ? 'Todos' : chip === 'Fallidos' ? 'Fallidos' : formatAreaName(chip);
         return (
           <button
             key={chip}

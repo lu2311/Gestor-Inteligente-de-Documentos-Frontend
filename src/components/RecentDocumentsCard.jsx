@@ -10,7 +10,11 @@ export default function RecentDocumentsCard({ documentos, onViewHistorial }) {
       {recientes.map((doc) => (
         <div className="recent-doc-row" key={doc.id}>
           <div>
-            <div className="small fw-semibold text-truncate" style={{ maxWidth: '200px' }} title={doc.nombre}>
+            <div
+              className="small fw-semibold text-truncate"
+              style={{ maxWidth: '200px' }}
+              title={doc.nombre}
+            >
               {doc.nombre}
             </div>
             <div className="d-flex align-items-center gap-1 mt-1">
@@ -20,7 +24,11 @@ export default function RecentDocumentsCard({ documentos, onViewHistorial }) {
           <StatusBadge estado={doc.estado} />
         </div>
       ))}
-      <button type="button" className="btn btn-link btn-sm ps-0 mt-2 text-decoration-none" onClick={onViewHistorial}>
+      <button
+        type="button"
+        className="btn btn-link btn-sm ps-0 mt-2 text-decoration-none"
+        onClick={onViewHistorial}
+      >
         Ver historial completo →
       </button>
     </div>

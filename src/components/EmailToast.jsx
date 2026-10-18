@@ -11,7 +11,7 @@ export default function EmailToast({ archivo, area, correo, onSent, onClose }) {
   const fallbackConfig = {
     text: 'var(--blue, #2f5fdb)',
     bg: 'var(--blue-soft, #eaf0fe)',
-    icon: 'bi-building'
+    icon: 'bi-building',
   };
   const config = AREA_CONFIG[area] || fallbackConfig;
 
@@ -42,7 +42,9 @@ export default function EmailToast({ archivo, area, correo, onSent, onClose }) {
       <div className="p-3 d-flex gap-3 align-items-start">
         <span
           className="email-toast-icon"
-          style={{ backgroundColor: estado === 'enviando' ? 'var(--blue-soft)' : 'var(--green-soft)' }}
+          style={{
+            backgroundColor: estado === 'enviando' ? 'var(--blue-soft)' : 'var(--green-soft)',
+          }}
         >
           {estado === 'enviando' ? (
             <span className="spinner-border spinner-border-sm" style={{ color: 'var(--blue)' }} />
@@ -55,10 +57,17 @@ export default function EmailToast({ archivo, area, correo, onSent, onClose }) {
             <div className="fw-semibold small">
               {estado === 'enviando' ? 'Enviando correo...' : 'Correo enviado'}
             </div>
-            <button type="button" className="btn-close btn-close-sm" style={{ fontSize: '0.65rem' }} onClick={onClose} />
+            <button
+              type="button"
+              className="btn-close btn-close-sm"
+              style={{ fontSize: '0.65rem' }}
+              onClick={onClose}
+            />
           </div>
           {estado === 'enviando' ? (
-            <div className="text-muted-soft small">Adjuntando <strong>{archivo}</strong> y preparando envío...</div>
+            <div className="text-muted-soft small">
+              Adjuntando <strong>{archivo}</strong> y preparando envío...
+            </div>
           ) : (
             <>
               <div className="text-muted-soft small">
@@ -69,11 +78,16 @@ export default function EmailToast({ archivo, area, correo, onSent, onClose }) {
                 {correo}
               </div>
               <div className="d-flex align-items-center gap-2 mt-2 pt-2 border-top">
-                <span className="badge-soft" style={{ backgroundColor: config.bg, color: config.text }}>
+                <span
+                  className="badge-soft"
+                  style={{ backgroundColor: config.bg, color: config.text }}
+                >
                   <i className={`bi ${config.icon}`} />
                   Área {area}
                 </span>
-                <span className="text-muted-soft" style={{ fontSize: '0.72rem' }}>· hace un momento</span>
+                <span className="text-muted-soft" style={{ fontSize: '0.72rem' }}>
+                  · hace un momento
+                </span>
               </div>
             </>
           )}

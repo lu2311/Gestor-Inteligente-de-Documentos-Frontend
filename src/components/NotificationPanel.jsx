@@ -3,7 +3,7 @@ import { AREA_CONFIG } from '../data/mockDocuments';
 const FALLBACK_CONFIG = {
   text: 'var(--blue, #2f5fdb)',
   bg: 'var(--blue-soft, #eaf0fe)',
-  icon: 'bi-building'
+  icon: 'bi-building',
 };
 
 export default function NotificationPanel({ notificaciones, onMarkAllRead, onClear }) {
@@ -15,17 +15,27 @@ export default function NotificationPanel({ notificaciones, onMarkAllRead, onCle
         <div className="d-flex align-items-center gap-2">
           <span className="fw-bold small">Notificaciones</span>
           {noLeidas > 0 && (
-            <span className="badge rounded-pill" style={{ backgroundColor: 'var(--red)' }}>{noLeidas}</span>
+            <span className="badge rounded-pill" style={{ backgroundColor: 'var(--red)' }}>
+              {noLeidas}
+            </span>
           )}
         </div>
         <div className="d-flex gap-2">
           {noLeidas > 0 && (
-            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={onMarkAllRead}>
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0 text-decoration-none"
+              onClick={onMarkAllRead}
+            >
               Marcar todo leído
             </button>
           )}
           {notificaciones.length > 0 && (
-            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none text-muted-soft" onClick={onClear}>
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0 text-decoration-none text-muted-soft"
+              onClick={onClear}
+            >
               Limpiar
             </button>
           )}
@@ -43,17 +53,31 @@ export default function NotificationPanel({ notificaciones, onMarkAllRead, onCle
             const config = AREA_CONFIG[n.area] || FALLBACK_CONFIG;
             return (
               <div className={`notif-row ${n.leido ? '' : 'unread'}`} key={n.id}>
-                <span className="notif-icon" style={{ backgroundColor: config.bg, color: config.text }}>
+                <span
+                  className="notif-icon"
+                  style={{ backgroundColor: config.bg, color: config.text }}
+                >
                   <i className={`bi ${config.icon}`} />
                 </span>
                 <div className="flex-fill">
-                  <div className="small fw-semibold">Correo enviado · Área {n.area || 'Asignada'}</div>
-                  <div className="small fw-bold text-dark text-truncate" style={{ maxWidth: '250px' }} title={n.archivo}>
+                  <div className="small fw-semibold">
+                    Correo enviado · Área {n.area || 'Asignada'}
+                  </div>
+                  <div
+                    className="small fw-bold text-dark text-truncate"
+                    style={{ maxWidth: '250px' }}
+                    title={n.archivo}
+                  >
                     {n.archivo}
                   </div>
-                  <div className="d-flex align-items-center gap-2 text-muted-soft" style={{ fontSize: '0.75rem' }}>
+                  <div
+                    className="d-flex align-items-center gap-2 text-muted-soft"
+                    style={{ fontSize: '0.75rem' }}
+                  >
                     <i className="bi bi-envelope-check" style={{ color: 'var(--green)' }} />
-                    <span className="fw-medium" style={{ color: 'var(--blue, #2f5fdb)' }}>{n.correo}</span>
+                    <span className="fw-medium" style={{ color: 'var(--blue, #2f5fdb)' }}>
+                      {n.correo}
+                    </span>
                     <span>·</span>
                     <span>{n.hora}</span>
                   </div>
