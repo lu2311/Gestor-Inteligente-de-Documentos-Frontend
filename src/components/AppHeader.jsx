@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import NotificationPanel from './NotificationPanel';
 
 export default function AppHeader({
-  onLogoClick = () => { },
+  onLogoClick = () => {},
   notificaciones = [],
-  onMarkAllRead = () => { },
-  onClearNotifications = () => { },
+  onMarkAllRead = () => {},
+  onClearNotifications = () => {},
 }) {
   const [panelOpen, setPanelOpen] = useState(false);
   const panelRef = useRef(null);
@@ -62,7 +62,10 @@ export default function AppHeader({
             <NotificationPanel
               notificaciones={notificaciones}
               onMarkAllRead={onMarkAllRead}
-              onClear={() => { onClearNotifications(); setPanelOpen(false); }}
+              onClear={() => {
+                onClearNotifications();
+                setPanelOpen(false);
+              }}
             />
           )}
         </div>

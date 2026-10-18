@@ -20,7 +20,10 @@ export default function AreaDistributionCard({ documentos = [] }) {
               <span className="text-muted-soft">{count} docs</span>
             </div>
             <div className="area-progress-track">
-              <div className="area-progress-fill" style={{ width: `${pct}%`, backgroundColor: config.text }} />
+              <div
+                className="area-progress-fill"
+                style={{ width: `${pct}%`, backgroundColor: config.text }}
+              />
             </div>
           </div>
         );

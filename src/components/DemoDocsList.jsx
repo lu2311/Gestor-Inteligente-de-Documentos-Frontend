@@ -3,7 +3,10 @@ import { demoFiles } from '../data/mockDocuments';
 export default function DemoDocsList({ onSelectDemo }) {
   return (
     <div className="mb-4">
-      <div className="text-muted-soft small text-uppercase fw-semibold mb-2" style={{ letterSpacing: '0.03em' }}>
+      <div
+        className="text-muted-soft small text-uppercase fw-semibold mb-2"
+        style={{ letterSpacing: '0.03em' }}
+      >
         O prueba con un documento demo:
       </div>
       <div className="d-flex flex-wrap gap-2">

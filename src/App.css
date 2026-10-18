@@ -141,7 +141,6 @@ body {
   padding: 1.75rem 1.5rem 3rem;
 }
 
-
 /* ---------- KPI area summary ---------- */
 .kpi-mini {
   background-color: var(--bg-card);
@@ -184,7 +183,9 @@ body {
   padding: 3rem 1.5rem;
   text-align: center;
   background-color: #fafbfd;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
   cursor: pointer;
 }
 
@@ -824,7 +825,6 @@ body {
 }
 
 @keyframes typingBounce {
-
   0%,
   80%,
   100% {
@@ -837,7 +837,6 @@ body {
     opacity: 1;
   }
 }
-
 
 /* =====================================================================
    RESPONSIVE + CÁMARA  (bloque añadido)
@@ -887,18 +886,18 @@ body {
   max-width: 100%;
 }
 
-.file-preview>div {
+.file-preview > div {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.recent-doc-row>div:first-child {
+.recent-doc-row > div:first-child {
   min-width: 0;
   overflow-wrap: anywhere;
   margin-right: 0.5rem;
 }
 
-.notif-row>.flex-fill {
+.notif-row > .flex-fill {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -1062,7 +1061,6 @@ body {
 
 /* ---------- Móvil (< 576px) ---------- */
 @media (max-width: 575.98px) {
-
   /* Header y contenedor */
   .app-header {
     padding: 0.5rem 0.75rem;
@@ -1086,7 +1084,7 @@ body {
   }
 
   /* Resumen por área: la 5.ª tarjeta (huérfana) ocupa todo el ancho. */
-  .summary-wrap .row>.col-6:last-child:nth-child(odd) {
+  .summary-wrap .row > .col-6:last-child:nth-child(odd) {
     width: 100%;
   }
 

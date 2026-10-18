@@ -59,7 +59,10 @@ export default function App() {
 
           docs.forEach((doc) => {
             const notifId = `notif-doc-${doc.id}`;
-            if (!existingIds.has(notifId) && (doc.estado === 'Procesado' || doc.processing_status === 'completed')) {
+            if (
+              !existingIds.has(notifId) &&
+              (doc.estado === 'Procesado' || doc.processing_status === 'completed')
+            ) {
               nuevasDeBd.push({
                 id: notifId,
                 documentId: doc.id,
@@ -146,12 +149,14 @@ export default function App() {
 
         setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
         setActiveDocument(documentoProcesado);
-        setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
+        setDocumentos((actuales) => [
+          documentoProcesado,
+          ...actuales.filter((d) => d.id !== documentoProcesado.id),
+        ]);
         setView('results');
 
         // Refrescar lista completa desde Supabase
         cargarDocumentos();
-
       } else {
         // Fallback síncrono
         const resultado = initialResponse;
@@ -185,12 +190,14 @@ export default function App() {
 
         setNotificaciones((actuales) => [nuevaNotif, ...actuales]);
         setActiveDocument(documentoProcesado);
-        setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
+        setDocumentos((actuales) => [
+          documentoProcesado,
+          ...actuales.filter((d) => d.id !== documentoProcesado.id),
+        ]);
         setView('results');
 
         cargarDocumentos();
       }
-
     } catch (error) {
       if (error.status === 400) {
         setErrorMessage('Tipo de archivo no soportado.');
@@ -244,7 +251,10 @@ export default function App() {
       });
 
       setActiveDocument(documentoProcesado);
-      setDocumentos((actuales) => [documentoProcesado, ...actuales.filter((d) => d.id !== documentoProcesado.id)]);
+      setDocumentos((actuales) => [
+        documentoProcesado,
+        ...actuales.filter((d) => d.id !== documentoProcesado.id),
+      ]);
       setView('results');
       cargarDocumentos();
     } catch (error) {
@@ -293,9 +303,9 @@ export default function App() {
         {view === 'processing' && (
           <UploadPage
             documentos={documentos}
-            onStartProcessing={() => { }}
-            onSimulateError={() => { }}
-            onViewHistorial={() => { }}
+            onStartProcessing={() => {}}
+            onSimulateError={() => {}}
+            onViewHistorial={() => {}}
           />
         )}
 

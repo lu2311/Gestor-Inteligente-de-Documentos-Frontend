@@ -66,3 +66,47 @@ Pull Request
 
 ### Importante
 El incumplimiento de estas reglas puede ocasionar el rechazo del Pull Request hasta que se corrija la situación.
+
+## Calidad, lint y hooks
+
+| Comando | Qué hace |
+|---|---|
+| `npm run lint` | ESLint (flat config en `eslint.config.js`, reglas de React) |
+| `npm run lint:fix` | ESLint con `--fix` |
+| `npm run format` / `npm run format:check` | Prettier sobre `src/` |
+| `npm run build` | Build de Vite (`dist/`) |
+
+Los hooks de Git (Husky) se instalan solos al ejecutar `npm install` (script
+`prepare`). En cada commit, `lint-staged` ejecuta `eslint --fix` y
+`prettier --write` **solo** sobre los archivos preparados.
+
+### Escaneo de secretos (Gitleaks)
+
+- En CI se ejecuta siempre (`gitleaks/gitleaks-action`) sobre los commits del PR.
+- En local es opcional: si tienes el binario `gitleaks` instalado, el hook
+  `pre-commit` lo ejecuta automáticamente; si no, se omite y el CI lo cubre igual.
+- Instalación (verifica con `gitleaks version`): binario oficial en
+  <https://github.com/gitleaks/gitleaks/releases>; macOS `brew install gitleaks`;
+  Windows `scoop install gitleaks`.
+- Configuración: `.gitleaks.toml`.
+
+### Integración continua (GitHub Actions)
+
+`.github/workflows/ci.yml` se ejecuta en cada push a `develop`/`main` y en
+cada Pull Request hacia esas ramas:
+
+| Job | Comprueba |
+|---|---|
+| `Lint, formato y build` | `npm run lint`, `npm run format:check` y `npm run build` |
+| `Prueba de humo Docker` | Construye la imagen y verifica `GET /healthz` |
+| `Escaneo de secretos` | Gitleaks sobre el historial completo |
+
+- El job `ci` instala dependencias **una sola vez** (antes eran 3 jobs
+  encadenados que reinstalaban tres veces).
+- La versión de Node la fija `.nvmrc` (**20**, la misma que el `Dockerfile`).
+- Las ejecuciones antiguas de la misma rama se cancelan solas (`concurrency`).
+
+> Nota: para que estos checks bloqueen el merge, márcalos como *required
+> status checks* en la protección de rama usando los nombres exactos de los
+> jobs (`Lint, formato y build`, `Prueba de humo Docker` y
+> `Escaneo de secretos`).
