@@ -33,10 +33,10 @@ jobs:
 
     steps:
       - name: Descargar código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -62,15 +62,19 @@ jobs:
 
     steps:
       - name: Descargar código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Construir imagen Docker
         run: docker build -t gestor-documentos-frontend:latest .
 
       - name: Ejecutar contenedor
         run: |
+          # nginx resuelve `backend-api` al arrancar (proxy_pass). En CI ese
+          # host no existe, así que lo mapeamos a localhost para que nginx
+          # arranque; el smoke test solo comprueba el estático y /healthz.
           docker run -d \
             --name gestor-documentos-frontend \
+            --add-host backend-api:127.0.0.1 \
             -p 8080:80 \
             gestor-documentos-frontend:latest
 
@@ -98,7 +102,7 @@ jobs:
 
     steps:
       - name: Descargar código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Historial completo: Gitleaks escanea también los commits nuevos.
           fetch-depth: 0
@@ -106,6 +110,6 @@ jobs:
       # Escaneo de secretos. Es gratuito en repositorios de usuario;
       # en repositorios de organización requiere GITLEAKS_LICENSE.
       - name: Escaneo de secretos (Gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
