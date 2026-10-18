@@ -76,10 +76,11 @@ jobs:
 
       - name: Verificar aplicación
         run: |
-          for i in $(seq 1 10); do
+          for intento in $(seq 1 10); do
             if curl --fail --silent http://localhost:8080/healthz; then
               exit 0
             fi
+            echo "Intento ${intento}: la aplicación aún no responde en /healthz"
             sleep 2
           done
           echo "La aplicación no respondió en /healthz" >&2
