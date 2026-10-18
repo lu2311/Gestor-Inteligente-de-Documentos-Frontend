@@ -44,9 +44,15 @@ export default function HistorialTable({ documentos, onVerDocumento }) {
                   )}
                 </div>
               </td>
-              <td><CategoryBadge tipoDocumento={doc.tipoDocumento} area={doc.area} /></td>
-              <td className="text-muted-soft">{doc.fecha} - {doc.hora}</td>
-              <td><StatusBadge estado={doc.estado} /></td>
+              <td>
+                <CategoryBadge tipoDocumento={doc.tipoDocumento} area={doc.area} />
+              </td>
+              <td className="text-muted-soft">
+                {doc.fecha} - {doc.hora}
+              </td>
+              <td>
+                <StatusBadge estado={doc.estado} />
+              </td>
               <td>
                 <button
                   type="button"

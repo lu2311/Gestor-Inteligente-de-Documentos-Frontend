@@ -13,7 +13,8 @@ const formatSize = (bytes) => `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
  * Se monta solo cuando está abierto: al desmontarse libera la cámara.
  */
 export default function CameraCapture({ onConfirm, onClose }) {
-  const { videoRef, errorMessage, canRetry, isActive, canSwitch, start, switchCamera, capture } = useCamera();
+  const { videoRef, errorMessage, canRetry, isActive, canSwitch, start, switchCamera, capture } =
+    useCamera();
 
   const [photo, setPhoto] = useState(null); // { file, url }
   const [capturing, setCapturing] = useState(false);
@@ -89,9 +90,16 @@ export default function CameraCapture({ onConfirm, onClose }) {
                 <h2 className="modal-title h6 fw-bold mb-1" id={titleId}>
                   Registrar documento con cámara
                 </h2>
-                <p className="text-muted-soft small mb-0">Ubica el documento completo dentro del encuadre.</p>
+                <p className="text-muted-soft small mb-0">
+                  Ubica el documento completo dentro del encuadre.
+                </p>
               </div>
-              <button type="button" className="btn-close" aria-label="Cerrar cámara" onClick={onClose} />
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Cerrar cámara"
+                onClick={onClose}
+              />
             </div>
 
             <div className="modal-body camera-body">
@@ -106,7 +114,11 @@ export default function CameraCapture({ onConfirm, onClose }) {
                 />
 
                 {reviewing && (
-                  <img className="camera-media" src={photo.url} alt="Vista previa de la foto capturada" />
+                  <img
+                    className="camera-media"
+                    src={photo.url}
+                    alt="Vista previa de la foto capturada"
+                  />
                 )}
 
                 {showLoader && (
@@ -138,12 +150,16 @@ export default function CameraCapture({ onConfirm, onClose }) {
               </div>
 
               {reviewing && (
-                <div className="alert alert-success d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3" role="status">
+                <div
+                  className="alert alert-success d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3"
+                  role="status"
+                >
                   <i className="bi bi-check-circle-fill mt-1" aria-hidden="true" />
                   <div className="min-w-0">
                     <div className="fw-semibold">¡Foto capturada correctamente!</div>
                     <div className="small text-break">
-                      {photo.file.name} · {formatSize(photo.file.size)}. ¿Quieres usarla para clasificar el documento?
+                      {photo.file.name} · {formatSize(photo.file.size)}. ¿Quieres usarla para
+                      clasificar el documento?
                     </div>
                   </div>
                 </div>

@@ -5,7 +5,13 @@ import RecentDocumentsCard from '../components/RecentDocumentsCard';
 import AreaDistributionCard from '../components/AreaDistributionCard';
 import CameraCapture from '../components/CameraCapture';
 
-export default function UploadPage({ documentos, onStartProcessing, onStartMobileProcessing, onSimulateError, onViewHistorial }) {
+export default function UploadPage({
+  documentos,
+  onStartProcessing,
+  onStartMobileProcessing,
+  onSimulateError,
+  onViewHistorial,
+}) {
   const [file, setFile] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraNotice, setCameraNotice] = useState(null);
@@ -58,7 +64,9 @@ export default function UploadPage({ documentos, onStartProcessing, onStartMobil
             <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-start justify-content-between gap-3">
               <div>
                 <h5 className="fw-bold mb-1">Subir Documento</h5>
-                <p className="text-muted-soft small mb-0">La IA detectará automáticamente el área destino.</p>
+                <p className="text-muted-soft small mb-0">
+                  La IA detectará automáticamente el área destino.
+                </p>
               </div>
 
               <button
@@ -72,7 +80,10 @@ export default function UploadPage({ documentos, onStartProcessing, onStartMobil
             </div>
 
             {cameraNotice && (
-              <div className="alert alert-success d-flex align-items-start gap-2 py-2 px-3 small mt-3 mb-0" role="status">
+              <div
+                className="alert alert-success d-flex align-items-start gap-2 py-2 px-3 small mt-3 mb-0"
+                role="status"
+              >
                 <i className="bi bi-check-circle-fill mt-1" aria-hidden="true" />
                 <span className="flex-fill text-break">{cameraNotice}</span>
                 <button
@@ -122,7 +133,9 @@ export default function UploadPage({ documentos, onStartProcessing, onStartMobil
         </div>
       </div>
 
-      {cameraOpen && <CameraCapture onConfirm={handleCameraConfirm} onClose={() => setCameraOpen(false)} />}
+      {cameraOpen && (
+        <CameraCapture onConfirm={handleCameraConfirm} onClose={() => setCameraOpen(false)} />
+      )}
     </>
   );
 }

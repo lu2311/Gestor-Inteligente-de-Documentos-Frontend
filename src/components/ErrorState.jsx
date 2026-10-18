@@ -12,7 +12,7 @@ export default function ErrorState({ fileName, message, onRetry, onGoHome }) {
         <i className="bi bi-exclamation-triangle-fill" />
       </div>
       <h5 className="fw-bold mb-1">No se pudo procesar el documento</h5>
-      {message && (<div className="text-danger small mb-3">{message}</div>)}
+      {message && <div className="text-danger small mb-3">{message}</div>}
       {fileName && <div className="text-muted-soft small mb-3">{fileName}</div>}
 
       <div className="text-start bg-light rounded-3 p-3 mb-4">

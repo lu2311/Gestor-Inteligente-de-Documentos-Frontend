@@ -5,7 +5,8 @@ export const CAMERA_MESSAGES = {
     'Tu navegador no permite acceder a la cámara. Prueba con una versión actualizada de Chrome, Edge, Firefox o Safari.',
   insecure:
     'El acceso a la cámara requiere una conexión segura. Abre la aplicación desde una dirección https:// (o desde localhost).',
-  denied: 'No pudimos acceder a la cámara. Habilita el permiso en tu navegador e inténtalo nuevamente.',
+  denied:
+    'No pudimos acceder a la cámara. Habilita el permiso en tu navegador e inténtalo nuevamente.',
   'not-found': 'No encontramos ninguna cámara disponible en este dispositivo.',
   'in-use': 'La cámara está siendo usada por otra aplicación. Ciérrala e inténtalo nuevamente.',
   ended: 'La cámara se detuvo. Vuelve a activarla para continuar.',
@@ -46,7 +47,7 @@ function buildFileName() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
   return `captura_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(
-    d.getMinutes()
+    d.getMinutes(),
   )}${p(d.getSeconds())}.jpg`;
 }
 
@@ -119,7 +120,7 @@ export function useCamera({ defaultFacingMode = 'environment' } = {}) {
         setStatus(STATUS_BY_ERROR_NAME[error?.name] ?? 'error');
       }
     },
-    [releaseStream, detectSwitchable]
+    [releaseStream, detectSwitchable],
   );
 
   const stop = useCallback(() => {
@@ -130,7 +131,7 @@ export function useCamera({ defaultFacingMode = 'environment' } = {}) {
 
   const switchCamera = useCallback(
     () => start(facingRef.current === 'environment' ? 'user' : 'environment'),
-    [start]
+    [start],
   );
 
   const capture = useCallback(
@@ -148,13 +149,18 @@ export function useCamera({ defaultFacingMode = 'environment' } = {}) {
         canvas.toBlob(
           (blob) =>
             resolve(
-              blob ? new File([blob], buildFileName(), { type: 'image/jpeg', lastModified: Date.now() }) : null
+              blob
+                ? new File([blob], buildFileName(), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  })
+                : null,
             ),
           'image/jpeg',
-          0.92
+          0.92,
         );
       }),
-    []
+    [],
   );
 
   useEffect(
@@ -162,7 +168,7 @@ export function useCamera({ defaultFacingMode = 'environment' } = {}) {
       requestRef.current += 1;
       releaseStream();
     },
-    [releaseStream]
+    [releaseStream],
   );
 
   return {

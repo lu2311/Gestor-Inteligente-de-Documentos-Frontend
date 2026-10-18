@@ -24,7 +24,6 @@ export default function Dropzone({ file, onFileSelected, onRemoveFile }) {
     }
   };
 
-
   const handleChange = (e) => {
     const selected = e.target.files?.[0];
 
@@ -48,7 +47,12 @@ export default function Dropzone({ file, onFileSelected, onRemoveFile }) {
             <div className="fw-semibold">{file.nombre}</div>
             <div className="text-muted-soft small">{file.size}</div>
           </div>
-          <button type="button" className="remove-file-btn" onClick={onRemoveFile} aria-label="Eliminar archivo">
+          <button
+            type="button"
+            className="remove-file-btn"
+            onClick={onRemoveFile}
+            aria-label="Eliminar archivo"
+          >
             <i className="bi bi-x" />
           </button>
         </div>
@@ -63,17 +67,28 @@ export default function Dropzone({ file, onFileSelected, onRemoveFile }) {
   return (
     <div
       className={`dropzone ${dragging ? 'dragging' : ''}`}
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
       role="button"
       tabIndex={0}
     >
-      <input ref={inputRef} type="file" className="d-none" accept=".pdf,.docx,.xlsx,image/*" onChange={handleChange} />
+      <input
+        ref={inputRef}
+        type="file"
+        className="d-none"
+        accept=".pdf,.docx,.xlsx,image/*"
+        onChange={handleChange}
+      />
       <i className="bi bi-cloud-arrow-up cloud-icon d-block mb-3" />
       <div className="fw-semibold">Arrastra tus archivos aquí o haz clic para explorar</div>
-      <div className="text-muted-soft small mt-1">Soporta PDF, JPG, PNG, DOCX y XLSX (Máx. 10MB)</div>
+      <div className="text-muted-soft small mt-1">
+        Soporta PDF, JPG, PNG, DOCX y XLSX (Máx. 10MB)
+      </div>
     </div>
   );
 }

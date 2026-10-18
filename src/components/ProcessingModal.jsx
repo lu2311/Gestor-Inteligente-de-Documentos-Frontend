@@ -19,24 +19,15 @@ export default function ProcessingModal({ step }) {
       <div className="processing-card">
         <div className="spinner-ring" />
 
-        <h6 className="fw-bold mb-1">
-          Procesando documento
-        </h6>
+        <h6 className="fw-bold mb-1">Procesando documento</h6>
 
-        <div className="text-muted-soft small">
-          {step}
-        </div>
+        <div className="text-muted-soft small">{step}</div>
 
         <div className="processing-progress">
-          <div
-            className="processing-progress-fill"
-            style={{ width: `${progress}%` }}
-          />
+          <div className="processing-progress-fill" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="text-muted-soft small mt-2 text-mono">
-          {progress}%
-        </div>
+        <div className="text-muted-soft small mt-2 text-mono">{progress}%</div>
       </div>
     </div>
   );

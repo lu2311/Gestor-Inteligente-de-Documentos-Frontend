@@ -6,12 +6,7 @@ import DerivationStatusCard from '../components/DerivationStatusCard';
 import ExecutiveReport from '../components/ExecutiveReport';
 import EmailToast from '../components/EmailToast';
 
-export default function ResultsPage({
-  documento,
-  fileName,
-  onUploadAnother,
-  onViewHistorial
-}) {
+export default function ResultsPage({ documento, fileName, onUploadAnother, onViewHistorial }) {
   const [showToast, setShowToast] = useState(true);
 
   if (!documento) return null;
@@ -37,9 +32,7 @@ export default function ResultsPage({
           <i className="bi bi-check-lg" />
         </div>
 
-        <h5 className="fw-bold mb-1">
-          ¡Documento procesado exitosamente!
-        </h5>
+        <h5 className="fw-bold mb-1">¡Documento procesado exitosamente!</h5>
 
         <div className="text-muted-soft small d-flex align-items-center justify-content-center gap-2">
           <span>{docFileName}</span>
@@ -60,7 +53,11 @@ export default function ResultsPage({
 
       <CategoryConfidenceCard
         tipoDocumento={documento.tipoDocumento}
-        confianza={Number.isFinite(confianza) ? Math.round(confianza * 100) : (documento.categoriaConfianza || 95)}
+        confianza={
+          Number.isFinite(confianza)
+            ? Math.round(confianza * 100)
+            : documento.categoriaConfianza || 95
+        }
       />
 
       {/* NUEVO: Informe Ejecutivo Completo */}
@@ -76,7 +73,11 @@ export default function ResultsPage({
       {(!documento.informeEjecutivo || Object.keys(documento.informeEjecutivo).length === 0) && (
         <>
           <SummaryBox
-            resumen={documento.resumenEjecutivo || documento.resumen || `Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`}
+            resumen={
+              documento.resumenEjecutivo ||
+              documento.resumen ||
+              `Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`
+            }
           />
           {documento.campos && Object.keys(documento.campos).length > 0 && (
             <div className="card-plain p-3 mb-3">
@@ -96,16 +97,10 @@ export default function ResultsPage({
         </>
       )}
 
-      <DerivationStatusCard
-        correo={targetEmail}
-      />
+      <DerivationStatusCard correo={targetEmail} />
 
       <div className="d-flex gap-2 mt-4">
-        <button
-          type="button"
-          className="btn btn-primary flex-fill"
-          onClick={onUploadAnother}
-        >
+        <button type="button" className="btn btn-primary flex-fill" onClick={onUploadAnother}>
           Subir otro documento
         </button>
 
