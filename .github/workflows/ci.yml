@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - main
 
   pull_request:
     branches:
@@ -12,9 +13,23 @@ on:
 
   workflow_dispatch:
 
+# Si se empuja de nuevo sobre la misma rama, cancela la ejecución anterior
+# en lugar de dejar dos pipelines compitiendo.
+concurrency:
+  group: ci-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permisos mínimos: solo lectura del repositorio.
+permissions:
+  contents: read
+
 jobs:
-  install:
+  # Validación estática y build. Antes había 3 jobs encadenados que
+  # reinstalaban dependencias 3 veces; así se instala una sola vez.
+  ci:
+    name: Lint, formato y build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Descargar código
@@ -23,44 +38,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-
-      - name: Instalar dependencias
-        run: npm ci
-
-  build:
-    runs-on: ubuntu-latest
-    needs: install
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Instalar dependencias
-        run: npm ci
-
-      - name: Compilar proyecto
-        run: npm run build
-
-  lint:
-    runs-on: ubuntu-latest
-    needs: install
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Instalar dependencias
@@ -72,9 +50,15 @@ jobs:
       - name: Verificar formato
         run: npm run format:check
 
+      - name: Compilar proyecto
+        run: npm run build
+
+  # Prueba de humo real: construye la imagen y comprueba que la app responde.
   docker:
+    name: Prueba de humo Docker
     runs-on: ubuntu-latest
-    needs: build
+    needs: ci
+    timeout-minutes: 15
 
     steps:
       - name: Descargar código
@@ -92,15 +76,24 @@ jobs:
 
       - name: Verificar aplicación
         run: |
-          sleep 5
-          curl --fail http://localhost:8080/healthz
+          for i in $(seq 1 10); do
+            if curl --fail --silent http://localhost:8080/healthz; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "La aplicación no respondió en /healthz" >&2
+          docker logs gestor-documentos-frontend
+          exit 1
 
       - name: Detener contenedor
         if: always()
         run: docker stop gestor-documentos-frontend || true
 
   secrets:
+    name: Escaneo de secretos
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Descargar código

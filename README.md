@@ -90,5 +90,23 @@ Los hooks de Git (Husky) se instalan solos al ejecutar `npm install` (script
   Windows `scoop install gitleaks`.
 - Configuración: `.gitleaks.toml`.
 
-> Nota: si quieres que estos checks bloqueen el merge, márcalos como
-> *required status checks* en la protección de la rama `develop`.
+### Integración continua (GitHub Actions)
+
+`.github/workflows/ci.yml` se ejecuta en cada push a `develop`/`main` y en
+cada Pull Request hacia esas ramas:
+
+| Job | Comprueba |
+|---|---|
+| `Lint, formato y build` | `npm run lint`, `npm run format:check` y `npm run build` |
+| `Prueba de humo Docker` | Construye la imagen y verifica `GET /healthz` |
+| `Escaneo de secretos` | Gitleaks sobre el historial completo |
+
+- El job `ci` instala dependencias **una sola vez** (antes eran 3 jobs
+  encadenados que reinstalaban tres veces).
+- La versión de Node la fija `.nvmrc` (**20**, la misma que el `Dockerfile`).
+- Las ejecuciones antiguas de la misma rama se cancelan solas (`concurrency`).
+
+> Nota: para que estos checks bloqueen el merge, márcalos como *required
+> status checks* en la protección de rama usando los nombres exactos de los
+> jobs (`Lint, formato y build`, `Prueba de humo Docker` y
+> `Escaneo de secretos`).
