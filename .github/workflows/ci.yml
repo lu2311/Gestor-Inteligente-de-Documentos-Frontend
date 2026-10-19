@@ -69,12 +69,11 @@ jobs:
 
       - name: Ejecutar contenedor
         run: |
-          # nginx resuelve `backend-api` al arrancar (proxy_pass). En CI ese
-          # host no existe, así que lo mapeamos a localhost para que nginx
-          # arranque; el smoke test solo comprueba el estático y /healthz.
+          # nginx resuelve `backend-api` por petición (resolver + variable de
+          # proxy_pass), así que arranca aunque ese host no exista: en CI no
+          # hay backend. El smoke test solo comprueba el estático y /healthz.
           docker run -d \
             --name gestor-documentos-frontend \
-            --add-host backend-api:127.0.0.1 \
             -p 8080:80 \
             gestor-documentos-frontend:latest
 
