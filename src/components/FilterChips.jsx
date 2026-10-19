@@ -1,36 +1,36 @@
-import { AREAS, AREA_CONFIG, formatAreaName } from '../data/mockDocuments';
+import { getAreaDistribution, docMatchesArea } from '../data/mockDocuments';
 
 export default function FilterChips({ documentos, activeFilter, onChange }) {
   const countFor = (filterKey) => {
     if (filterKey === 'Todos') return documentos.length;
     if (filterKey === 'Fallidos') return documentos.filter((d) => d.estado === 'Fallido').length;
-    return documentos.filter((d) => d.area === filterKey).length;
+    return documentos.filter((d) => docMatchesArea(d, filterKey)).length;
   };
 
-  const chips = ['Todos', ...AREAS, 'Fallidos'];
+  const chips = [
+    { key: 'Todos', label: 'Todos', icon: 'bi-grid' },
+    ...getAreaDistribution(documentos).map(({ area, label, config }) => ({
+      key: area,
+      label,
+      icon: config.icon,
+    })),
+    { key: 'Fallidos', label: 'Fallidos', icon: 'bi-x-circle' },
+  ];
 
   return (
     <div className="d-flex flex-wrap gap-2 mb-3">
-      {chips.map((chip) => {
-        const isActive = activeFilter === chip;
-        const icon =
-          chip === 'Todos'
-            ? 'bi-grid'
-            : chip === 'Fallidos'
-              ? 'bi-x-circle'
-              : AREA_CONFIG[chip]?.icon || 'bi-building';
-        const label =
-          chip === 'Todos' ? 'Todos' : chip === 'Fallidos' ? 'Fallidos' : formatAreaName(chip);
+      {chips.map(({ key, label, icon }) => {
+        const isActive = activeFilter === key;
         return (
           <button
-            key={chip}
+            key={key}
             type="button"
             className={`filter-chip ${isActive ? 'active' : ''}`}
-            onClick={() => onChange(chip)}
+            onClick={() => onChange(key)}
           >
             <i className={`bi ${icon}`} />
             {label}
-            <span className="count">{countFor(chip)}</span>
+            <span className="count">{countFor(key)}</span>
           </button>
         );
       })}
