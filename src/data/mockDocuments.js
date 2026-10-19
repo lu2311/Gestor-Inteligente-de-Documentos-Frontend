@@ -9,11 +9,11 @@ export const AREA_FISCALIZACION_ADUANERA = 'PREVENCION_CONTRABANDO_FISCALIZACION
 // filtros por área.
 export const AREA_OTRAS = 'OTRAS_AREAS';
 
-export const AREAS = [
-  'INTENDENCIA_RECAUDACION_CONTROL_MASIVO',
-  'INTENDENCIA_FISCALIZACION',
-  AREA_FISCALIZACION_ADUANERA,
-];
+// Áreas que se muestran en la aplicación (distribución, contadores y filtros).
+// La Intendencia de Fiscalización (impuestos internos) no tiene fila propia: si
+// llega algún documento con esa área, se agrupa en "Otras áreas" para que no
+// desaparezca, y su etiqueta sigue en AREA_LABELS para el encabezado del informe.
+export const AREAS = ['INTENDENCIA_RECAUDACION_CONTROL_MASIVO', AREA_FISCALIZACION_ADUANERA];
 
 export const AREA_LABELS = {
   INTENDENCIA_RECAUDACION_CONTROL_MASIVO: 'Recaudación y Control Masivo',
