@@ -3,20 +3,11 @@ import { useCamera } from '../data/useCamera';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-const formatSize = (bytes) =>
-  `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+const formatSize = (bytes) => `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 
 export default function CameraCapture({ onConfirm, onClose }) {
-  const {
-    videoRef,
-    errorMessage,
-    canRetry,
-    isActive,
-    canSwitch,
-    start,
-    switchCamera,
-    capture,
-  } = useCamera();
+  const { videoRef, errorMessage, canRetry, isActive, canSwitch, start, switchCamera, capture } =
+    useCamera();
 
   const [photo, setPhoto] = useState(null);
   const [capturing, setCapturing] = useState(false);
@@ -138,12 +129,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
   const handleApplyCrop = async () => {
     const image = cropImageRef.current;
 
-    if (
-      !image ||
-      !completedCrop ||
-      completedCrop.width <= 0 ||
-      completedCrop.height <= 0
-    ) {
+    if (!image || !completedCrop || completedCrop.width <= 0 || completedCrop.height <= 0) {
       setCropError('Selecciona el área que deseas conservar.');
       return;
     }
@@ -174,17 +160,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
         throw new Error('No se pudo crear el área de recorte.');
       }
 
-      context.drawImage(
-        image,
-        sx,
-        sy,
-        sw,
-        sh,
-        0,
-        0,
-        sw,
-        sh
-      );
+      context.drawImage(image, sx, sy, sw, sh, 0, 0, sw, sh);
 
       const blob = await new Promise((resolve, reject) => {
         canvas.toBlob(
@@ -196,18 +172,14 @@ export default function CameraCapture({ onConfirm, onClose }) {
             }
           },
           'image/jpeg',
-          0.92
+          0.92,
         );
       });
 
-      const croppedFile = new File(
-        [blob],
-        photo.file.name,
-        {
-          type: 'image/jpeg',
-          lastModified: Date.now(),
-        }
-      );
+      const croppedFile = new File([blob], photo.file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      });
 
       setPhoto({
         file: croppedFile,
@@ -218,9 +190,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
       setCrop(undefined);
       setCompletedCrop(null);
     } catch {
-      setCropError(
-        'No se pudo recortar la imagen. Inténtalo nuevamente.'
-      );
+      setCropError('No se pudo recortar la imagen. Inténtalo nuevamente.');
     } finally {
       setApplyingCrop(false);
     }
@@ -244,14 +214,10 @@ export default function CameraCapture({ onConfirm, onClose }) {
       >
         <div className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
           <div className="modal-content camera-content">
-
             {/* Encabezado */}
             <div className="modal-header camera-header">
               <div className="pe-2">
-                <h2
-                  className="modal-title h6 fw-bold mb-1"
-                  id={titleId}
-                >
+                <h2 className="modal-title h6 fw-bold mb-1" id={titleId}>
                   Registrar documento con cámara
                 </h2>
 
@@ -271,21 +237,18 @@ export default function CameraCapture({ onConfirm, onClose }) {
             {/* Contenido */}
             <div className="modal-body camera-body">
               <div className="camera-stage">
-
                 {/* Mantener el video montado */}
                 <video
                   ref={videoRef}
-                  className={`camera-media ${
-                    isActive && !reviewing ? '' : 'is-hidden'
-                  }`}
+                  className={`camera-media ${isActive && !reviewing ? '' : 'is-hidden'}`}
                   autoPlay
                   playsInline
                   muted
                 />
 
                 {/* Fotografía y editor */}
-                {reviewing && (
-                  cropping ? (
+                {reviewing &&
+                  (cropping ? (
                     <div className="crop-container">
                       <ReactCrop
                         crop={crop}
@@ -309,38 +272,25 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       src={photo.url}
                       alt="Vista previa de la foto capturada"
                     />
-                  )
-                )}
+                  ))}
 
                 {/* Cargando cámara */}
                 {showLoader && (
                   <div className="camera-overlay">
-                    <div
-                      className="spinner-border text-light"
-                      role="status"
-                      aria-hidden="true"
-                    />
+                    <div className="spinner-border text-light" role="status" aria-hidden="true" />
 
-                    <p className="camera-overlay-text">
-                      Solicitando acceso a la cámara…
-                    </p>
+                    <p className="camera-overlay-text">Solicitando acceso a la cámara…</p>
                   </div>
                 )}
 
                 {/* Error de cámara */}
                 {showError && (
                   <div className="camera-overlay">
-                    <span
-                      className="camera-overlay-icon"
-                      aria-hidden="true"
-                    >
+                    <span className="camera-overlay-icon" aria-hidden="true">
                       <i className="bi bi-camera" />
                     </span>
 
-                    <p
-                      className="camera-overlay-text"
-                      role="alert"
-                    >
+                    <p className="camera-overlay-text" role="alert">
                       {errorMessage}
                     </p>
 
@@ -360,17 +310,14 @@ export default function CameraCapture({ onConfirm, onClose }) {
               {/* Instrucciones del recorte */}
               {reviewing && cropping && (
                 <p className="text-muted small mt-3 mb-0">
-                  Arrastra los bordes o las esquinas del recuadro para
-                  seleccionar la parte del documento que deseas conservar.
+                  Arrastra los bordes o las esquinas del recuadro para seleccionar la parte del
+                  documento que deseas conservar.
                 </p>
               )}
 
               {/* Error al recortar */}
               {cropError && (
-                <div
-                  className="alert alert-danger mt-3 mb-0"
-                  role="alert"
-                >
+                <div className="alert alert-danger mt-3 mb-0" role="alert">
                   {cropError}
                 </div>
               )}
@@ -381,19 +328,14 @@ export default function CameraCapture({ onConfirm, onClose }) {
                   className="alert alert-success d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3"
                   role="status"
                 >
-                  <i
-                    className="bi bi-check-circle-fill mt-1"
-                    aria-hidden="true"
-                  />
+                  <i className="bi bi-check-circle-fill mt-1" aria-hidden="true" />
 
                   <div className="min-w-0">
-                    <div className="fw-semibold">
-                      ¡Foto capturada correctamente!
-                    </div>
+                    <div className="fw-semibold">¡Foto capturada correctamente!</div>
 
                     <div className="small text-break">
-                      {photo.file.name} · {formatSize(photo.file.size)}.
-                      {' '}Puedes recortarla antes de enviarla.
+                      {photo.file.name} · {formatSize(photo.file.size)}. Puedes recortarla antes de
+                      enviarla.
                     </div>
                   </div>
                 </div>
@@ -401,12 +343,8 @@ export default function CameraCapture({ onConfirm, onClose }) {
 
               {/* Error al tomar la foto */}
               {captureFailed && (
-                <div
-                  className="alert alert-danger mt-3 mb-0 py-2 px-3 small"
-                  role="alert"
-                >
-                  No se pudo tomar la foto. Espera a que la imagen cargue
-                  e inténtalo de nuevo.
+                <div className="alert alert-danger mt-3 mb-0 py-2 px-3 small" role="alert">
+                  No se pudo tomar la foto. Espera a que la imagen cargue e inténtalo de nuevo.
                 </div>
               )}
             </div>
@@ -429,11 +367,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       type="button"
                       className="btn btn-primary flex-fill flex-sm-grow-0"
                       onClick={handleApplyCrop}
-                      disabled={
-                        !completedCrop?.width ||
-                        !completedCrop?.height ||
-                        applyingCrop
-                      }
+                      disabled={!completedCrop?.width || !completedCrop?.height || applyingCrop}
                     >
                       {applyingCrop ? (
                         <>
@@ -445,10 +379,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
                         </>
                       ) : (
                         <>
-                          <i
-                            className="bi bi-crop me-2"
-                            aria-hidden="true"
-                          />
+                          <i className="bi bi-crop me-2" aria-hidden="true" />
                           Aplicar recorte
                         </>
                       )}
@@ -461,10 +392,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       className="btn btn-outline-secondary flex-fill flex-sm-grow-0"
                       onClick={handleRetake}
                     >
-                      <i
-                        className="bi bi-arrow-counterclockwise me-2"
-                        aria-hidden="true"
-                      />
+                      <i className="bi bi-arrow-counterclockwise me-2" aria-hidden="true" />
                       Tomar otra
                     </button>
 
@@ -473,10 +401,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       className="btn btn-outline-primary flex-fill flex-sm-grow-0"
                       onClick={handleStartCrop}
                     >
-                      <i
-                        className="bi bi-crop me-2"
-                        aria-hidden="true"
-                      />
+                      <i className="bi bi-crop me-2" aria-hidden="true" />
                       Recortar foto
                     </button>
 
@@ -485,10 +410,7 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       className="btn btn-primary flex-fill flex-sm-grow-0"
                       onClick={() => onConfirm(photo.file)}
                     >
-                      <i
-                        className="bi bi-check-lg me-2"
-                        aria-hidden="true"
-                      />
+                      <i className="bi bi-check-lg me-2" aria-hidden="true" />
                       Usar esta foto
                     </button>
                   </>
@@ -502,14 +424,9 @@ export default function CameraCapture({ onConfirm, onClose }) {
                       aria-label="Cambiar de cámara"
                       onClick={() => switchCamera()}
                     >
-                      <i
-                        className="bi bi-arrow-repeat"
-                        aria-hidden="true"
-                      />
+                      <i className="bi bi-arrow-repeat" aria-hidden="true" />
 
-                      <span className="d-none d-sm-inline ms-2">
-                        Cambiar cámara
-                      </span>
+                      <span className="d-none d-sm-inline ms-2">Cambiar cámara</span>
                     </button>
                   )}
 
@@ -520,15 +437,9 @@ export default function CameraCapture({ onConfirm, onClose }) {
                     onClick={handleCapture}
                   >
                     {capturing ? (
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        aria-hidden="true"
-                      />
+                      <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
                     ) : (
-                      <i
-                        className="bi bi-camera me-2"
-                        aria-hidden="true"
-                      />
+                      <i className="bi bi-camera me-2" aria-hidden="true" />
                     )}
 
                     {capturing ? 'Capturando…' : 'Tomar foto'}
