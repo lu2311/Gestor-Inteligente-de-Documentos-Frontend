@@ -5,6 +5,7 @@ import SummaryBox from '../components/SummaryBox';
 import DerivationStatusCard from '../components/DerivationStatusCard';
 import ExecutiveReport from '../components/ExecutiveReport';
 import EmailToast from '../components/EmailToast';
+import { visibleFields } from '../data/fieldLabels';
 
 export default function ResultsPage({ documento, fileName, onUploadAnother, onViewHistorial }) {
   const [showToast, setShowToast] = useState(true);
@@ -14,6 +15,9 @@ export default function ResultsPage({ documento, fileName, onUploadAnother, onVi
   const confianza = Number(documento.confianza);
   const docFileName = fileName || documento.fileName || documento.nombre || 'Documento';
   const targetEmail = documento.correoDerivacion || 'derivaciones@sunat.gob.pe';
+  // Solo los campos con valor y con su etiqueta legible: los vacíos son de otros
+  // tipos de documento y antes llenaban la pantalla sin aportar nada.
+  const camposVisibles = visibleFields(documento.campos);
 
   return (
     <div className="mx-auto" style={{ maxWidth: 800 }}>
@@ -79,19 +83,21 @@ export default function ResultsPage({ documento, fileName, onUploadAnother, onVi
               `Documento clasificado como ${documento.tipoDocumento} en área ${documento.area}.`
             }
           />
-          {documento.campos && Object.keys(documento.campos).length > 0 && (
+          {camposVisibles.length > 0 && (
             <div className="card-plain p-3 mb-3">
-              <div className="text-muted-soft small text-uppercase fw-semibold mb-2">
-                Campos extraídos
-              </div>
-              <div className="row">
-                {Object.entries(documento.campos).map(([key, value]) => (
-                  <div key={key} className="col-md-6 mb-2">
-                    <div className="text-muted-soft small">{key}</div>
-                    <div className="fw-semibold">{value}</div>
-                  </div>
-                ))}
-              </div>
+              <details open={camposVisibles.length <= 6}>
+                <summary className="text-muted-soft small text-uppercase fw-semibold">
+                  {`Campos extraídos (${camposVisibles.length})`}
+                </summary>
+                <div className="row mt-2">
+                  {camposVisibles.map(({ key, label, value }) => (
+                    <div key={key} className="col-md-6 mb-2">
+                      <div className="text-muted-soft small">{label}</div>
+                      <div className="fw-semibold">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </details>
             </div>
           )}
         </>
