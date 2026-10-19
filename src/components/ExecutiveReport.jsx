@@ -1,7 +1,22 @@
 // src/components/ExecutiveReport.jsx
+import {
+  AREA_CONFIG,
+  AREA_OFFICIAL_NAMES,
+  AREA_OTRAS,
+  TIPOS_CONFIG,
+  formatAreaName,
+} from '../data/mockDocuments';
 
 export default function ExecutiveReport({ informe, tipoDocumento, area }) {
   if (!informe) return null;
+
+  // El área del documento manda el encabezado: antes estaba fijado a
+  // "Intendencia de Recaudación y Control Masivo" incluso para las actas aduaneras.
+  const areaLabel = formatAreaName(area);
+  const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[AREA_OTRAS];
+  const areaOficial = AREA_OFFICIAL_NAMES[area] || areaLabel;
+  const tipoConfig = TIPOS_CONFIG[tipoDocumento];
+  const tipoLabel = tipoConfig?.label || (tipoDocumento || 'desconocido').replace(/_/g, ' ');
 
   const formatKey = (key) =>
     key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
@@ -11,30 +26,26 @@ export default function ExecutiveReport({ informe, tipoDocumento, area }) {
       {/* Header del informe */}
       <div
         className="report-header mb-4 p-3"
-        style={{ backgroundColor: 'var(--area-intendencia-bg)', borderRadius: '8px 8px 0 0' }}
+        style={{ backgroundColor: areaConfig.bg, borderRadius: '8px 8px 0 0' }}
       >
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
             <span
               className="badge-soft fs-6 px-3 py-2"
-              style={{
-                backgroundColor: 'var(--area-intendencia-bg)',
-                color: 'var(--area-intendencia-text)',
-              }}
+              style={{ backgroundColor: areaConfig.bg, color: areaConfig.text }}
             >
-              <i className={`bi ${'bi-building'}`} /> Intendencia de Recaudación y Control Masivo
+              <i className={`bi ${areaConfig.icon}`} /> {areaLabel}
             </span>
             <span
               className="badge-soft fs-6 px-3 py-2"
               style={{ backgroundColor: 'var(--blue-soft)', color: 'var(--blue)' }}
             >
-              <i className={`bi ${'bi-file-earmark-text'}`} />{' '}
-              {(tipoDocumento || 'desconocido').replace(/_/g, ' ')}
+              <i className={`bi ${tipoConfig?.icon || 'bi-file-earmark-text'}`} /> {tipoLabel}
             </span>
           </div>
           <div className="text-end">
             <div className="text-muted-soft small">INFORME EJECUTIVO OFICIAL</div>
-            <div className="fw-bold small">SUNAT - Intendencia Recaudación y Control Masivo</div>
+            <div className="fw-bold small">SUNAT - {areaOficial}</div>
           </div>
         </div>
       </div>
@@ -264,7 +275,7 @@ export default function ExecutiveReport({ informe, tipoDocumento, area }) {
       <div className="report-footer mt-4 pt-3 border-top text-center text-muted-soft small">
         <div>Informe generado automáticamente por IA - SUNAT</div>
         <div className="text-muted-soft small">
-          Área: {area} | Fecha: {new Date().toLocaleDateString('es-PE')}
+          Área: {areaLabel} | Fecha: {new Date().toLocaleDateString('es-PE')}
         </div>
       </div>
     </div>

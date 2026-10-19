@@ -1,11 +1,11 @@
-import { AREAS, AREA_CONFIG, formatAreaName } from '../data/mockDocuments';
+import { getAreaDistribution } from '../data/mockDocuments';
 
-export default function AreaSummaryRow({ documentos }) {
+export default function AreaSummaryRow({ documentos = [] }) {
+  const filas = getAreaDistribution(documentos);
+
   return (
     <div className="row g-3 mb-4">
-      {AREAS.map((area) => {
-        const config = AREA_CONFIG[area];
-        const count = documentos.filter((d) => d.area === area).length;
+      {filas.map(({ area, label, count, config }) => {
         return (
           <div className="col-6 col-md" key={area}>
             <div className="kpi-mini">
@@ -14,7 +14,7 @@ export default function AreaSummaryRow({ documentos }) {
               </span>
               <div>
                 <div className="value">{count}</div>
-                <div className="label">{formatAreaName(area)}</div>
+                <div className="label">{label}</div>
               </div>
             </div>
           </div>
