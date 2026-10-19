@@ -983,6 +983,33 @@ body {
   overflow: hidden;
 }
 
+.crop-container {
+  width: 100%;
+  max-height: 65vh;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #111;
+}
+
+.crop-container .ReactCrop {
+  max-width: 100%;
+}
+
+.crop-image {
+  display: block;
+  max-width: 100%;
+  max-height: 65vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.crop-container .ReactCrop__crop-selection {
+  border: 2px solid #fff;
+}
+
 /* contain: lo que se ve en el encuadre es exactamente lo que se captura (sin recortes). */
 .camera-media {
   position: absolute;
