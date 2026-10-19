@@ -3,6 +3,7 @@ import SearchBar from '../components/SearchBar';
 import FilterChips from '../components/FilterChips';
 import HistorialTable from '../components/HistorialTable';
 import Pagination from '../components/Pagination';
+import { docMatchesArea } from '../data/mockDocuments';
 
 const PAGE_SIZE = 6;
 
@@ -27,7 +28,9 @@ export default function HistorialPage({
 
       const matchesFilter =
         activeFilter === 'Todos' ||
-        (activeFilter === 'Fallidos' ? doc.estado === 'Fallido' : doc.area === activeFilter);
+        (activeFilter === 'Fallidos'
+          ? doc.estado === 'Fallido'
+          : docMatchesArea(doc, activeFilter));
       return matchesSearch && matchesFilter;
     });
   }, [documentos, search, activeFilter]);
