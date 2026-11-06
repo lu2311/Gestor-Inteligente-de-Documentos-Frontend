@@ -26,7 +26,7 @@ export default function Chatbot() {
     {
       role: 'assistant',
       content:
-        '¡Hola! Soy tu asistente inteligente con Ollama (Llama 3.1). Puedo responder preguntas sobre los documentos almacenados en Supabase o trámites SUNAT.',
+        '¡Hola! Soy tu asistente inteligente (Gemini). Puedo responder preguntas sobre los documentos almacenados en Supabase o trámites SUNAT.',
     },
   ]);
   const [input, setInput] = useState('');
@@ -87,7 +87,7 @@ export default function Chatbot() {
             ? {
                 ...m,
                 content:
-                  'Lo siento, hubo un error al conectar con Ollama o el backend. Por favor verifica que los servicios estén activos.',
+                  'Lo siento, hubo un error al conectar con Gemini o el backend. Por favor verifica que los servicios estén activos.',
               }
             : m,
         ),
@@ -118,7 +118,7 @@ export default function Chatbot() {
             </div>
             <div>
               <div className="fw-bold">Asistente IA RAG</div>
-              <div className="small opacity-75">Ollama (Llama 3.1) • Supabase Bucket</div>
+              <div className="small opacity-75">Gemini • Supabase Bucket</div>
             </div>
           </div>
 

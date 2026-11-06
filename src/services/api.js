@@ -251,7 +251,7 @@ export async function getDocumentById(id) {
 }
 
 // ==========================================
-// CHAT CON OLLAMA (Streaming)
+// CHAT CON GEMINI (Streaming)
 // ==========================================
 export async function* chatStream(message, history = []) {
   const response = await fetch(`${API_URL}/chat/stream`, {
