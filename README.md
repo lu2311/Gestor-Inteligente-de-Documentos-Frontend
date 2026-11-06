@@ -1,5 +1,33 @@
 # Gestor-Inteligente-de-Documentos-Frontend
 
+## Ejecución standalone (sin el repositorio raíz)
+
+Este repositorio es autónomo: incluye su `Dockerfile` y su
+`docker-compose.yml`.
+
+```bash
+cp .env.example .env    # ajusta VITE_API_URL a la URL del backend
+docker compose up --build
+```
+
+La aplicación queda en http://localhost:8080 y el backend se consume
+directamente en `VITE_API_URL`.
+
+> **Importante:** `VITE_API_URL` y `VITE_JOB_TIMEOUT_MS` son variables de
+> **build time**. El `Dockerfile` las declara con `ARG`, así que deben pasarse
+> al construir la imagen:
+>
+> ```bash
+> docker build --build-arg VITE_API_URL=https://api.tudominio.com -t frontend .
+> ```
+>
+> Si cambian, hay que reconstruir la imagen (no basta reiniciar el contenedor).
+> Sin `VITE_API_URL`, el frontend usa rutas relativas y Nginx intenta resolver
+> `backend-api:3000`, que solo existe en el compose del repositorio padre.
+
+En Railway, configurar `VITE_API_URL` en las variables del servicio y
+redeployar para reconstruir los assets.
+
 ## Regla importante
 NADIE debe hacer push directo a main o develop.
 
