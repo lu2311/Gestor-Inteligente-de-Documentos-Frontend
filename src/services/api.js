@@ -75,10 +75,9 @@ export async function checkJobStatus(jobId) {
 }
 
 // --- Espera de jobs en cola -------------------------------------------------
-// El backend espera hasta OLLAMA_TIMEOUT_MS (por defecto 600000 ms = 10 min) a
-// que Ollama responda. El presupuesto de espera del frontend DEBE ser mayor para
-// que el cliente reciba el estado real del job (completed/failed) en lugar de
-// rendirse antes que el backend ("Tiempo de espera agotado" prematuro).
+// El backend procesa OCR + Gemini + generación de PDF; el presupuesto de espera
+// del frontend DEBE cubrir el peor caso para que el cliente reciba el estado
+// real del job (completed/failed) en lugar de rendirse antes que el backend.
 // Se puede sobrescribir con VITE_JOB_TIMEOUT_MS.
 export const JOB_POLL_INTERVAL_MS = 2000;
 export const JOB_POLL_TIMEOUT_MS = Number(import.meta.env.VITE_JOB_TIMEOUT_MS) || 720000; // 12 min
@@ -251,7 +250,7 @@ export async function getDocumentById(id) {
 }
 
 // ==========================================
-// CHAT CON OLLAMA (Streaming)
+// CHAT CON GEMINI (Streaming)
 // ==========================================
 export async function* chatStream(message, history = []) {
   const response = await fetch(`${API_URL}/chat/stream`, {
