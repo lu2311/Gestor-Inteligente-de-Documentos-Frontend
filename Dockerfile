@@ -7,6 +7,17 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Vite resuelve estas variables en tiempo de build (no de ejecución).
+# Railway solo inyecta variables como build args si están declaradas con ARG.
+# Sin VITE_API_URL el frontend usaría rutas relativas y Nginx intentaría
+# resolver "backend-api:3000" (DNS de Docker Compose), que no existe fuera
+# del compose raíz.
+ARG VITE_API_URL=""
+ARG VITE_JOB_TIMEOUT_MS=""
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_JOB_TIMEOUT_MS=$VITE_JOB_TIMEOUT_MS
+
 RUN npm run build
 
 # ==========================================
