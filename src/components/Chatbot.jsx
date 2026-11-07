@@ -1,24 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { chatStream } from '../services/api';
-
-// Corrige la codificación UTF-8 corrupta en nombres de archivos
-function fixEncoding(str) {
-  if (!str) return str;
-  return str
-    .replace(/Ã/g, 'Ó')
-    .replace(/Ã³/g, 'ó')
-    .replace(/Ã¡/g, 'á')
-    .replace(/Ã©/g, 'é')
-    .replace(/Ã/g, 'í')
-    .replace(/Ãº/g, 'ú')
-    .replace(/Ã±/g, 'ñ')
-    .replace(/Ã/g, 'Á')
-    .replace(/Ã‰/g, 'É')
-    .replace(/Ã/g, 'Í')
-    .replace(/Ã“/g, 'Ó')
-    .replace(/Ãš/g, 'Ú')
-    .replace(/Ã‘/g, 'Ñ');
-}
+import { fixEncoding } from '../utils/fixEncoding';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +23,7 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const sendQuery = async (queryText) => {
+  const sendQuery = async (queryText, options = {}) => {
     if (!queryText.trim() || isTyping) return;
 
     const userMessage = { role: 'user', content: queryText };
@@ -62,7 +44,7 @@ export default function Chatbot() {
       let currentText = '';
       let currentResults = [];
 
-      for await (const chunk of chatStream(userMessage.content, historyForApi)) {
+      for await (const chunk of chatStream(userMessage.content, historyForApi, options)) {
         if (chunk.type === 'content' && chunk.content) {
           currentText += chunk.content;
           setMessages((prev) =>
@@ -116,10 +98,23 @@ export default function Chatbot() {
             <div className="avatar">
               <i className="bi bi-robot" />
             </div>
-            <div>
-              <div className="fw-bold">Asistente IA RAG</div>
-              <div className="small opacity-75">Gemini • Supabase Bucket</div>
+            <div className="flex-grow-1">
+              <div className="fw-bold">Asistente documental</div>
+              <div className="small opacity-75">Gemini • Documentos</div>
             </div>
+            <button
+              type="button"
+              className="chatbot-docs-btn"
+              onClick={() =>
+                sendQuery('Muéstrame los documentos registrados', { includeDocuments: true })
+              }
+              disabled={isTyping}
+              title="Ver documentos registrados"
+              aria-label="Ver documentos registrados"
+            >
+              <i className="bi bi-folder2-open" />
+              <span>Documentos</span>
+            </button>
           </div>
 
           <div className="chatbot-body">
@@ -174,7 +169,11 @@ export default function Chatbot() {
                   type="button"
                   className="btn btn-outline-primary btn-sm rounded-pill py-1 px-2"
                   style={{ fontSize: '0.75rem' }}
-                  onClick={() => sendQuery('¿Qué documentos hay subidos en Supabase?')}
+                  onClick={() =>
+                    sendQuery('¿Qué documentos hay subidos en Supabase?', {
+                      includeDocuments: true,
+                    })
+                  }
                 >
                   📄 Ver documentos
                 </button>
