@@ -734,6 +734,29 @@ body {
   justify-content: center;
 }
 
+.chatbot-docs-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.chatbot-docs-btn:hover:not(:disabled),
+.chatbot-docs-btn:focus-visible {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-docs-btn:disabled {
+  opacity: 0.55;
+}
+
 .chatbot-body {
   flex: 1;
   overflow-y: auto;
@@ -1287,6 +1310,10 @@ body {
 
   .chatbot-header {
     padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .chatbot-docs-btn span {
+    display: none;
   }
 
   .chatbot-close {

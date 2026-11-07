@@ -252,11 +252,14 @@ export async function getDocumentById(id) {
 // ==========================================
 // CHAT CON GEMINI (Streaming)
 // ==========================================
-export async function* chatStream(message, history = []) {
+export async function* chatStream(message, history = [], options = {}) {
+  const body = { message, history };
+  if (options.includeDocuments === true) body.includeDocuments = true;
+
   const response = await fetch(`${API_URL}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
