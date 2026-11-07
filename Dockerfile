@@ -8,16 +8,9 @@ RUN npm ci
 
 COPY . .
 
-# Vite resuelve estas variables en tiempo de build (no de ejecución).
-# Railway solo inyecta variables como build args si están declaradas con ARG.
-# Sin VITE_API_URL el frontend usaría rutas relativas y Nginx intentaría
-# resolver "backend-api:3000" (DNS de Docker Compose), que no existe fuera
-# del compose raíz.
-ARG VITE_API_URL=""
-ARG VITE_JOB_TIMEOUT_MS=""
-ENV VITE_API_URL=$VITE_API_URL
-ENV VITE_JOB_TIMEOUT_MS=$VITE_JOB_TIMEOUT_MS
-
+# La configuración del API se resuelve al arrancar el contenedor (ver
+# docker-entrypoint.d/40-runtime-config.sh), no al construir la imagen. Así la
+# misma imagen inmutable sirve para staging y producción sin rebuild.
 RUN npm run build
 
 # ==========================================
@@ -28,8 +21,17 @@ FROM nginx:alpine
 # Copiar los archivos estáticos compilados de Vite
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copiar la configuración personalizada de Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Plantilla de Nginx + script de configuración en runtime.
+# La plantilla vive fuera de /etc/nginx/templates para que el envsubst de la
+# imagen oficial no sustituya variables propias de nginx ($request_uri, etc.).
+COPY nginx.conf.template /etc/nginx/default.conf.template
+COPY docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh
+
+# Defaults para Docker Compose. En Railway se sobrescribe API_UPSTREAM con el
+# nombre privado del servicio (por ejemplo, http://backend-api.railway.internal:3000).
+ENV API_UPSTREAM=http://backend-api:3000
+ENV JOB_TIMEOUT_MS=720000
 
 EXPOSE 80
 

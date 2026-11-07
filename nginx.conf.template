@@ -27,16 +27,19 @@ server {
     # REVERSE PROXY A BACKEND API (Para acceso local y LAN)
     # =======================================================
 
-    # DNS interno de Docker Compose: permite re-resolver el nombre del backend
-    # en cada petición (TTL de 10s). Sin esto, nginx resuelve "backend-api" una
-    # sola vez al arrancar, cachea esa IP y devuelve 502 (connection refused)
-    # cuando el contenedor del backend se recrea con otra IP (p. ej. tras un
-    # "docker compose build backend-api && up -d").
-    resolver 127.0.0.11 valid=10s ipv6=off;
+    # DNS interno: permite re-resolver el nombre del backend en cada petición
+    # (TTL de 10s). Sin esto, nginx resuelve el upstream una sola vez al
+    # arrancar, cachea esa IP y devuelve 502 (connection refused) cuando el
+    # contenedor/servicio cambia de IP (reinicio, redeploy, Railway).
+    #
+    # __DNS_RESOLVER__ y __API_UPSTREAM__ se sustituyen al arrancar el
+    # contenedor (docker-entrypoint.d/40-runtime-config.sh). En Docker Compose
+    # el resolver es 127.0.0.11; en Railway es fd12::10 (red privada IPv6).
+    resolver __DNS_RESOLVER__ valid=10s ipv6=on;
 
     # Backend como variable: obliga a nginx a resolverlo por petición vía el
     # resolver de arriba en lugar de fijar la IP al iniciar.
-    set $backend_api "http://backend-api:3000";
+    set $backend_api "__API_UPSTREAM__";
 
     # Proxy para el Chatbot con SSE Streaming sin buffering
     location /chat/ {

@@ -3,15 +3,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # Variables de Vite: se inyectan en tiempo de build.
-      # Se pueden sobrescribir desde el entorno o desde un .env local.
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
-        VITE_JOB_TIMEOUT_MS: ${VITE_JOB_TIMEOUT_MS:-720000}
     image: gestor-documentos-frontend:latest
     container_name: gestor-documentos-frontend
     ports:
       - "8080:80"
+    environment:
+      # En standalone el backend no está en la red de Compose: el navegador
+      # llama directamente a la URL absoluta configurada aquí.
+      API_URL: ${API_URL:-http://localhost:3000}
+      API_UPSTREAM: ${API_UPSTREAM:-http://backend-api:3000}
+      DNS_RESOLVER: ${DNS_RESOLVER:-127.0.0.11}
+      JOB_TIMEOUT_MS: ${JOB_TIMEOUT_MS:-720000}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/healthz"]
