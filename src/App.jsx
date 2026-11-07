@@ -14,6 +14,8 @@ import {
   normalizeDocument,
   getDestinationEmail,
 } from './services/api';
+import AccountModal from './components/AccountModal';
+import { getCurrentAccount, logoutAccount } from './services/auth';
 
 // Vistas posibles: 'upload' | 'processing' | 'results' | 'historial' | 'error'
 export default function App() {
@@ -34,6 +36,18 @@ export default function App() {
   const [failedFileName, setFailedFileName] = useState(null);
   const [processingStep, setProcessingStep] = useState('Extrayendo texto...');
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentAccount, setCurrentAccount] = useState(() => getCurrentAccount());
+
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+
+  const handleLogin = (account) => {
+    setCurrentAccount(account);
+  };
+
+  const handleLogout = () => {
+    logoutAccount();
+    setCurrentAccount(null);
+  };
 
   // Sincronizar notificaciones en localStorage
   useEffect(() => {
@@ -287,6 +301,9 @@ export default function App() {
         notificaciones={notificaciones}
         onMarkAllRead={() => setNotificaciones((prev) => prev.map((n) => ({ ...n, leido: true })))}
         onClearNotifications={() => setNotificaciones([])}
+        currentAccount={currentAccount}
+        onAccountClick={() => setAccountModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       <div className="app-body">
@@ -339,6 +356,10 @@ export default function App() {
       </div>
 
       {view === 'processing' && <ProcessingModal step={processingStep} />}
+
+      {accountModalOpen && (
+        <AccountModal onClose={() => setAccountModalOpen(false)} onLogin={handleLogin} />
+      )}
 
       <Chatbot />
     </div>
