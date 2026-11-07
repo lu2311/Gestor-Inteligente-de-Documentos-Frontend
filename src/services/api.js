@@ -6,12 +6,20 @@ import {
 } from '../data/mockDocuments';
 export { getDestinationEmail, getAreaByDocType, cleanTextEncoding, formatAreaName };
 
+// Precedencia: configuración de runtime (config.js generado al arrancar el
+// contenedor) > build-time (Vite, útil en desarrollo) > backend local.
+const runtimeConfig =
+  typeof window !== 'undefined' && window.__APP_CONFIG__ ? window.__APP_CONFIG__ : {};
+const runtimeApiUrl = typeof runtimeConfig.apiUrl === 'string' ? runtimeConfig.apiUrl : '';
+const buildTimeApiUrl = import.meta.env.VITE_API_URL;
 const API_URL =
-  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
-    ? import.meta.env.VITE_API_URL
-    : typeof window !== 'undefined' && window.location.port === '5173'
-      ? 'http://localhost:3000'
-      : '';
+  runtimeApiUrl !== ''
+    ? runtimeApiUrl
+    : buildTimeApiUrl !== undefined && buildTimeApiUrl !== ''
+      ? buildTimeApiUrl
+      : typeof window !== 'undefined' && window.location.port === '5173'
+        ? 'http://localhost:3000'
+        : '';
 
 export async function uploadDocument(file) {
   const formData = new FormData();
@@ -78,9 +86,10 @@ export async function checkJobStatus(jobId) {
 // El backend procesa OCR + Gemini + generación de PDF; el presupuesto de espera
 // del frontend DEBE cubrir el peor caso para que el cliente reciba el estado
 // real del job (completed/failed) en lugar de rendirse antes que el backend.
-// Se puede sobrescribir con VITE_JOB_TIMEOUT_MS.
+// Se puede sobrescribir con JOB_TIMEOUT_MS (runtime) o VITE_JOB_TIMEOUT_MS.
 export const JOB_POLL_INTERVAL_MS = 2000;
-export const JOB_POLL_TIMEOUT_MS = Number(import.meta.env.VITE_JOB_TIMEOUT_MS) || 720000; // 12 min
+export const JOB_POLL_TIMEOUT_MS =
+  Number(runtimeConfig.jobTimeoutMs) || Number(import.meta.env.VITE_JOB_TIMEOUT_MS) || 720000; // 12 min
 
 /**
  * Consulta el estado de un job hasta que termine o hasta agotar el presupuesto.

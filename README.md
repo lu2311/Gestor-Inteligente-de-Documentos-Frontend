@@ -6,27 +6,31 @@ Este repositorio es autónomo: incluye su `Dockerfile` y su
 `docker-compose.yml`.
 
 ```bash
-cp .env.example .env    # ajusta VITE_API_URL a la URL del backend
+cp .env.example .env    # ajusta API_URL a la URL del backend
 docker compose up --build
 ```
 
 La aplicación queda en http://localhost:8080 y el backend se consume
-directamente en `VITE_API_URL`.
+directamente en `API_URL`.
 
-> **Importante:** `VITE_API_URL` y `VITE_JOB_TIMEOUT_MS` son variables de
-> **build time**. El `Dockerfile` las declara con `ARG`, así que deben pasarse
-> al construir la imagen:
+> **Importante:** la configuración se resuelve al **arrancar el contenedor**
+> (`docker-entrypoint.d/40-runtime-config.sh`), no al construir la imagen. La
+> misma imagen puede promoverse de staging a producción cambiando variables:
 >
-> ```bash
-> docker build --build-arg VITE_API_URL=https://api.tudominio.com -t frontend .
-> ```
+> - `API_URL`: URL absoluta del backend para el navegador. Si se deja vacía, el
+>   frontend usa rutas relativas y nginx hace proxy inverso.
+> - `API_UPSTREAM`: URL interna que nginx usa como upstream cuando `API_URL`
+>   está vacía. En Docker Compose es `http://backend-api:3000`; en Railway es
+>   `http://backend-api.railway.internal:3000`.
+> - `DNS_RESOLVER`: servidor DNS para resolver `API_UPSTREAM`. Se autodetecta
+>   de `/etc/resolv.conf` (Docker: `127.0.0.11`, Railway: `fd12::10`).
+> - `JOB_TIMEOUT_MS`: presupuesto de polling de jobs (12 min por defecto).
 >
-> Si cambian, hay que reconstruir la imagen (no basta reiniciar el contenedor).
-> Sin `VITE_API_URL`, el frontend usa rutas relativas y Nginx intenta resolver
-> `backend-api:3000`, que solo existe en el compose del repositorio padre.
+> `VITE_API_URL` y `VITE_JOB_TIMEOUT_MS` siguen funcionando como fallback de
+> build time para desarrollo, pero el pipeline usa la configuración runtime.
 
-En Railway, configurar `VITE_API_URL` en las variables del servicio y
-redeployar para reconstruir los assets.
+En Railway, definir `API_UPSTREAM` (o `API_URL`) en las variables del servicio;
+no hace falta reconstruir la imagen.
 
 ## Regla importante
 NADIE debe hacer push directo a main o develop.
