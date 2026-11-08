@@ -57,6 +57,12 @@ export default function Chatbot() {
           setMessages((prev) =>
             prev.map((m) => (m.id === assistantMessageId ? { ...m, results: currentResults } : m)),
           );
+        } else if (chunk.type === 'ultimo_documento' && chunk.documento) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId ? { ...m, ultimoDocumento: chunk.documento } : m,
+            ),
+          );
         } else if (chunk.type === 'error') {
           throw new Error(chunk.error || 'Error en el stream');
         }
@@ -157,6 +163,33 @@ export default function Chatbot() {
                         <i className="bi bi-download text-primary ms-auto" />
                       </a>
                     ))}
+                  </div>
+                )}
+
+                {/* Tarjeta del último documento (respuesta estructurada) */}
+                {msg.ultimoDocumento && (
+                  <div className="mt-2 d-flex flex-column gap-2">
+                    <div className="text-muted fw-semibold" style={{ fontSize: '0.72rem' }}>
+                      📄 Último documento:
+                    </div>
+                    <a
+                      href={msg.ultimoDocumento.descargaUrl || '#'}
+                      className="document-card p-2 rounded border bg-light text-decoration-none d-flex align-items-center gap-2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Descargar último documento"
+                    >
+                      <i className="bi bi-file-earmark-pdf-fill text-danger fs-4" />
+                      <div className="flex-grow-1 overflow-hidden">
+                        <div className="fw-semibold small text-truncate">
+                          {fixEncoding(msg.ultimoDocumento.nombre)}
+                        </div>
+                        <div className="text-muted text-truncate" style={{ fontSize: '0.7rem' }}>
+                          {msg.ultimoDocumento.tipoDocumento} • {msg.ultimoDocumento.area}
+                        </div>
+                      </div>
+                      <i className="bi bi-download text-primary ms-auto" />
+                    </a>
                   </div>
                 )}
               </div>
