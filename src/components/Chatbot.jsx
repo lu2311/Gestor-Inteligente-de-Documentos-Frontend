@@ -60,9 +60,7 @@ export default function Chatbot() {
         } else if (chunk.type === 'ultimo_documento' && chunk.documento) {
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === assistantMessageId
-                ? { ...m, ultimoDocumento: chunk.documento }
-                : m,
+              m.id === assistantMessageId ? { ...m, ultimoDocumento: chunk.documento } : m,
             ),
           );
         } else if (chunk.type === 'error') {
